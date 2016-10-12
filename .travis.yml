@@ -1,20 +1,17 @@
-language: node_js
-node_js:
-  - "4.0"
+language: go
 
+go:
+  - 1.6
+  - tip
+
+# Sudo is required for docker
+sudo: required
+
+# Enable docker
 services:
-  - mongodb
+  - docker
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-4.8
+# In Travis, we need to bind to 127.0.0.1 in order to get a working connection. This environment variable
+# tells dockertest to do that.
 env:
-  - CXX=g++-4.8
-
-before_script:
-  - npm install -g gulp
-
-script: gulp test
+  - DOCKERTEST_BIND_LOCALHOST=true

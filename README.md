@@ -1,8 +1,13 @@
-# Mainflux Auth Server
+# Mainflux Auth Service
 
 [![License](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE) [![Join the chat at https://gitter.im/Mainflux/mainflux](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mainflux/mainflux?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Authentication and Authorization Microservice for Mainflux IoT Platform.
+### About
+The service provides authentication and authorization management over HTTP, for Mainflux IoT
+platform.
+
+### Usage
+TBD
 
 ### Documentation
 Development documentation can be found on our [Mainflux GitHub Wiki](https://github.com/Mainflux/mainflux/wiki).
