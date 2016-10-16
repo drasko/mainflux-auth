@@ -1,27 +1,30 @@
 # Mainflux Auth Service
 
-[![License](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE) [![Join the chat at https://gitter.im/Mainflux/mainflux](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Mainflux/mainflux?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![License](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE)
+[![Join the chat at https://gitter.im/Mainflux/mainflux](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
-### About
-The service provides authentication and authorization management over HTTP, for Mainflux IoT
-platform.
+Mainflux IoT authentication and authorization management service.
 
-### Usage
-TBD
-
-### Documentation
-Development documentation can be found on our [Mainflux GitHub Wiki](https://github.com/Mainflux/mainflux/wiki).
+### Details
+To find out more about the Mainflux IoT, please see our [wiki][wiki].
 
 ### Community
 #### Mailing lists
-- [mainflux-dev](https://groups.google.com/forum/#!forum/mainflux-dev) - developers related. This is discussion about development of Mainflux IoT cloud itself.
-- [mainflux-user](https://groups.google.com/forum/#!forum/mainflux-user) - general discussion and support. If you do not participate in development of Mainflux cloud infrastructure, this is probably what you're looking for.
+- [mainflux-dev][gDev] - developers related. Discussions about development of Mainflux IoT itself.
+- [mainflux-user][gUser] - general discussion and support. If you do not participate in development
+    of Mainflux cloud infrastructure, this is probably what you're looking for.
 
 #### IRC
-[Mainflux Gitter](https://gitter.im/Mainflux/mainflux?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[Mainflux Gitter][gitter]
 
 #### Twitter
-[@mainflux](https://twitter.com/mainflux)
+[@mainflux][twitter]
 
 ### License
 [Apache License, version 2.0](LICENSE)
+
+[wiki]: https://github.com/Mainflux/mainflux/wiki
+[gDev]: https://groups.google.com/forum/#!forum/mainflux-dev
+[gUser]: https://groups.google.com/forum/#!forum/mainflux-user
+[twitter]: https://twitter.com/mainflux
+[gitter]: https://gitter.im/Mainflux/mainflux?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

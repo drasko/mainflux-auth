@@ -1,0 +1,16 @@
+hash: bf434f27cce7c50d6d490a76f9902a22b91c00ecf416a52b9470ad78968c9ae3
+updated: 2016-10-17T09:57:24.27582114+02:00
+imports:
+- name: github.com/codegangsta/negroni
+  version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
+- name: github.com/dgrijalva/jwt-go
+  version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
+- name: github.com/garyburd/redigo
+  version: 8873b2f1995f59d4bcdd2b0dc9858e2cb9bf0c13
+- name: github.com/julienschmidt/httprouter
+  version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
+- name: golang.org/x/crypto
+  version: 5f4e837b98443e9e7a65072235205993af565d85
+  subpackages:
+  - bcrypt
+testImports: []
