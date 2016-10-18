@@ -1,7 +1,6 @@
 package core
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/mainflux/mainflux-auth-server/models"
@@ -15,11 +14,23 @@ var (
 		Resource: "channel",
 		Id:       "test-id",
 	}
-	scopes models.Scopes = models.Scopes{[]models.Scope{scope}}
+	scopes models.Scopes = models.Scopes{Items: []models.Scope{scope}}
 )
 
-func TestCreate(t *testing.T) {
-	actual, err := Create(scopes)
+func TestSetKey(t *testing.T) {
+	oldKey := key
+	newKey := "dummy-key"
+	SetKey(newKey)
+
+	if key != newKey {
+		t.Errorf("expected %s got %s", newKey, key)
+	}
+
+	SetKey(oldKey)
+}
+
+func TestCreateToken(t *testing.T) {
+	actual, err := CreateToken(scopes)
 	if err != nil {
 		t.Error("failed to create JWT:", err)
 	}
@@ -42,15 +53,15 @@ func TestScopesOf(t *testing.T) {
 	for i, s := range scopes.Items {
 		item := actual.Items[i]
 
-		if strings.Compare(item.Resource, s.Resource) != 0 {
+		if item.Resource != s.Resource {
 			t.Errorf("%d: expected res %s got %s", i, item.Resource, s.Resource)
 		}
 
-		if strings.Compare(item.Id, s.Id) != 0 {
+		if item.Id != s.Id {
 			t.Errorf("%d: expected ID %s got %s", i, item.Id, s.Id)
 		}
 
-		if strings.Compare(item.Actions, s.Actions) != 0 {
+		if item.Actions != s.Actions {
 			t.Errorf("%d: expected actions %s got %s", i, item.Actions, s.Actions)
 		}
 	}

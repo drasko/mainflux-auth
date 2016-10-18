@@ -1,0 +1,3 @@
+redisHost = "0.0.0.0"
+redisPort = 6379
+secretKey = "mainflux-api-key"

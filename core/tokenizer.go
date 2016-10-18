@@ -7,17 +7,21 @@ import (
 	"github.com/mainflux/mainflux-auth-server/models"
 )
 
-const (
-	key    string = "mainflux-api-key"
-	issuer string = "mainflux"
-)
+const issuer string = "mainflux"
+
+// default key value
+var key string = "mainflux-api-key"
 
 type tokenClaims struct {
 	models.Scopes
 	jwt.StandardClaims
 }
 
-func Create(scopes models.Scopes) (string, error) {
+func SetKey(newKey string) {
+	key = newKey
+}
+
+func CreateToken(scopes models.Scopes) (string, error) {
 	claims := tokenClaims{
 		scopes,
 		jwt.StandardClaims{Issuer: issuer},

@@ -1,6 +1,8 @@
-hash: dd1dbcb5555dcaaed01abdbfb524eee6bc0715d125a83bf55c725ed151ccd042
-updated: 2016-10-17T15:39:18.455004085+02:00
+hash: 8c871fe42d0878c777d7ee27d8435f540da9696b579e3f324020b5e962bd2ef2
+updated: 2016-10-18T11:56:35.394703993+02:00
 imports:
+- name: github.com/BurntSushi/toml
+  version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
 - name: github.com/codegangsta/negroni
   version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
 - name: github.com/dgrijalva/jwt-go
@@ -12,7 +14,7 @@ imports:
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: golang.org/x/crypto
-  version: 5f4e837b98443e9e7a65072235205993af565d85
+  version: 14f9af67c679edd414f72f13d67c917447113df2
   subpackages:
   - bcrypt
 testImports: []
