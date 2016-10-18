@@ -53,5 +53,8 @@ func main() {
 		core.SetKey(cfg.SecretKey)
 	}
 
+	core.StartCache(cfg.CacheURL())
+	defer core.CloseCache()
+
 	http.ListenAndServe(httpPort, api.Server())
 }

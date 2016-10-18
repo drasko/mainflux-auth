@@ -15,3 +15,7 @@ import:
   version: ~1.1.0
 - package: github.com/BurntSushi/toml
   version: ~0.2.0
+testImport:
+- package: github.com/go-errors/errors
+- package: gopkg.in/ory-am/dockertest.v2
+  version: ~2.2.2

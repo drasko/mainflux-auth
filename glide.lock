@@ -1,5 +1,5 @@
-hash: 8c871fe42d0878c777d7ee27d8435f540da9696b579e3f324020b5e962bd2ef2
-updated: 2016-10-18T11:56:35.394703993+02:00
+hash: 30c053d7003b02bd4f21ed17002f9f38b25bad4f7ce6f4b1a7388656deb5cab5
+updated: 2016-10-18T16:43:27.749156913+02:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -17,4 +17,20 @@ imports:
   version: 14f9af67c679edd414f72f13d67c917447113df2
   subpackages:
   - bcrypt
-testImports: []
+testImports:
+- name: github.com/go-errors/errors
+  version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
+- name: github.com/go-sql-driver/mysql
+  version: 0b58b37b664c21f3010e836f1b931e1d0b0b0685
+- name: github.com/lib/pq
+  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  subpackages:
+  - oid
+- name: github.com/ory-am/common
+  version: d93c852f2d09c219fd058756caf67bbdf8cf4be4
+  subpackages:
+  - env
+- name: github.com/pborman/uuid
+  version: a97ce2ca70fa5a848076093f05e639a89ca34d06
+- name: gopkg.in/ory-am/dockertest.v2
+  version: 1b35e25f4895dff0155ac7b67f69f9aa3a275a76
