@@ -1,5 +1,5 @@
-hash: 30c053d7003b02bd4f21ed17002f9f38b25bad4f7ce6f4b1a7388656deb5cab5
-updated: 2016-10-18T16:43:27.749156913+02:00
+hash: a249bb0b766d34e9dfd1660685eb0e94a4fb7e416861c1b898dc50e283c516e6
+updated: 2016-10-18T22:12:04.331229707+02:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -9,6 +9,9 @@ imports:
   version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/garyburd/redigo
   version: 8873b2f1995f59d4bcdd2b0dc9858e2cb9bf0c13
+  subpackages:
+  - internal
+  - redis
 - name: github.com/julienschmidt/httprouter
   version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
 - name: github.com/satori/go.uuid

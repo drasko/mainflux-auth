@@ -6,16 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mainflux/mainflux-auth-server/core"
+	"github.com/mainflux/mainflux-auth-server/utils"
 
 	"gopkg.in/ory-am/dockertest.v2"
 )
 
-const poolSize int = 10
-
 func TestMain(m *testing.M) {
 	c, err := dockertest.ConnectToRedis(5, time.Second, func(url string) bool {
-		return core.StartCache(url) != nil
+		return utils.StartCache(url) == nil
 	})
 
 	if err != nil {
@@ -26,7 +24,7 @@ func TestMain(m *testing.M) {
 	result := m.Run()
 
 	// close redis
-	core.CloseCache()
+	utils.CloseCache()
 
 	// remote used image
 	c.KillRemove()

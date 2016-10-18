@@ -1,8 +1,16 @@
 language: go
 
 go:
-  - 1.6
-  - tip
+  - 1.7
+
+before_install:
+  - sudo apt-get -qq update
+
+install:
+  - go get github.com/Masterminds/glide
+
+script:
+  - go test $(glide novendor)
 
 # Sudo is required for docker
 sudo: required

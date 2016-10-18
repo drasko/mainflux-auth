@@ -8,19 +8,17 @@ import (
 
 	"github.com/mainflux/mainflux-auth-server/api"
 	"github.com/mainflux/mainflux-auth-server/config"
-	"github.com/mainflux/mainflux-auth-server/core"
+	"github.com/mainflux/mainflux-auth-server/utils"
 )
 
 const (
 	defaultConfig string = "/src/github.com/mainflux/mainflux-auth-server/config/default.toml"
 	httpPort      string = ":8180"
 	help          string = `
-    Usage: mainflux-auth-server [options]
-
-    Options:
-        -c, --config <file>         Configuration file
-        -h, --help                  Prints this message end exits
-    `
+		Usage: mainflux-auth-server [options]
+		Options:
+			-c, --config <file>         Configuration file
+			-h, --help                  Prints this message end exits`
 )
 
 type options struct {
@@ -50,11 +48,11 @@ func main() {
 	cfg.Load(opts.Config)
 
 	if cfg.SecretKey != "" {
-		core.SetKey(cfg.SecretKey)
+		utils.SetKey(cfg.SecretKey)
 	}
 
-	core.StartCache(cfg.CacheURL())
-	defer core.CloseCache()
+	utils.StartCache(cfg.CacheURL())
+	defer utils.CloseCache()
 
 	http.ListenAndServe(httpPort, api.Server())
 }
