@@ -1,7 +1,13 @@
 package main
 
-import "github.com/mainflux/mainflux-auth-server/api"
+import (
+	"net/http"
+
+	"github.com/mainflux/mainflux-auth-server/api"
+)
+
+const port string = ":8180"
 
 func main() {
-	api.NewServer()
+	http.ListenAndServe(port, api.Server())
 }
