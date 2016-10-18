@@ -1,13 +1,15 @@
 package: github.com/mainflux/mainflux-auth-server
 import:
-- package: github.com/julienschmidt/httprouter
-  version: ~1.1.0
-- package: github.com/garyburd/redigo
-  version: ~1.0.0
-- package: github.com/dgrijalva/jwt-go
-  version: ~3.0.0
 - package: github.com/codegangsta/negroni
   version: ~0.2.0
+- package: github.com/julienschmidt/httprouter
+  version: ~1.1.0
+- package: github.com/dgrijalva/jwt-go
+  version: ~3.0.0
+- package: github.com/garyburd/redigo
+  version: ~1.0.0
 - package: golang.org/x/crypto
   subpackages:
   - bcrypt
+- package: github.com/satori/go.uuid
+  version: ~1.1.0
