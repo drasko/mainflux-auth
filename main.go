@@ -7,8 +7,9 @@ import (
 	"os"
 
 	"github.com/mainflux/mainflux-auth-server/api"
+	"github.com/mainflux/mainflux-auth-server/cache"
 	"github.com/mainflux/mainflux-auth-server/config"
-	"github.com/mainflux/mainflux-auth-server/utils"
+	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
 const (
@@ -48,11 +49,11 @@ func main() {
 	cfg.Load(opts.Config)
 
 	if cfg.SecretKey != "" {
-		utils.SetKey(cfg.SecretKey)
+		domain.SetKey(cfg.SecretKey)
 	}
 
-	utils.StartCache(cfg.CacheURL())
-	defer utils.CloseCache()
+	cache.Start(cfg.CacheURL())
+	defer cache.Stop()
 
 	http.ListenAndServe(httpPort, api.Server())
 }

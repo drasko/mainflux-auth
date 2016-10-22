@@ -1,4 +1,4 @@
-package models
+package domain
 
 type Scope struct {
 	Actions  string `json:"actions"`
@@ -6,6 +6,6 @@ type Scope struct {
 	Id       string `json:"id"`
 }
 
-type Scopes struct {
-	Items []Scope `json:"scopes"`
+type Payload struct {
+	Scopes []Scope `json:"scopes"`
 }

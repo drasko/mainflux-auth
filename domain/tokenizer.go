@@ -1,10 +1,9 @@
-package utils
+package domain
 
 import (
 	"errors"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/mainflux/mainflux-auth-server/models"
 )
 
 const issuer string = "mainflux"
@@ -13,7 +12,7 @@ const issuer string = "mainflux"
 var key string = "mainflux-api-key"
 
 type tokenClaims struct {
-	models.Scopes
+	Payload
 	jwt.StandardClaims
 }
 
@@ -21,10 +20,13 @@ func SetKey(newKey string) {
 	key = newKey
 }
 
-func CreateToken(scopes models.Scopes) (string, error) {
+func CreateToken(subject string, payload *Payload) (string, error) {
 	claims := tokenClaims{
-		scopes,
-		jwt.StandardClaims{Issuer: issuer},
+		*payload,
+		jwt.StandardClaims{
+			Issuer:  issuer,
+			Subject: subject,
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -36,7 +38,9 @@ func CreateToken(scopes models.Scopes) (string, error) {
 	return raw, nil
 }
 
-func ScopesOf(rawToken string) (*models.Scopes, error) {
+func ScopesOf(rawToken string) (Payload, error) {
+	var payload Payload
+
 	token, err := jwt.ParseWithClaims(
 		rawToken,
 		&tokenClaims{},
@@ -46,12 +50,12 @@ func ScopesOf(rawToken string) (*models.Scopes, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return payload, err
 	}
 
 	if claims, ok := token.Claims.(*tokenClaims); ok && token.Valid {
-		return &claims.Scopes, nil
+		return claims.Payload, nil
 	}
 
-	return nil, errors.New("Failed to retrieve claims.")
+	return payload, errors.New("failed to retrieve claims")
 }
