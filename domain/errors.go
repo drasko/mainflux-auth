@@ -2,12 +2,12 @@ package domain
 
 import "fmt"
 
-type AuthError struct {
+type ServiceError struct {
 	Code    int
 	Message string
 }
 
-func (e *AuthError) Error() string {
+func (e *ServiceError) Error() string {
 	if e == nil {
 		return "<nil>"
 	}

@@ -9,18 +9,18 @@ import (
 const issuer string = "mainflux"
 
 // default key value
-var key string = "mainflux-api-key"
+var secretKey string = "mainflux-api-key"
 
 type tokenClaims struct {
 	Payload
 	jwt.StandardClaims
 }
 
-func SetKey(newKey string) {
-	key = newKey
+func SetSecretKey(key string) {
+	secretKey = key
 }
 
-func CreateToken(subject string, payload *Payload) (string, error) {
+func CreateKey(subject string, payload *Payload) (string, error) {
 	claims := tokenClaims{
 		*payload,
 		jwt.StandardClaims{
@@ -29,8 +29,8 @@ func CreateToken(subject string, payload *Payload) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	raw, err := token.SignedString([]byte(key))
+	key := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	raw, err := key.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", err
 	}
@@ -38,14 +38,14 @@ func CreateToken(subject string, payload *Payload) (string, error) {
 	return raw, nil
 }
 
-func ScopesOf(rawToken string) (Payload, error) {
+func ScopesOf(key string) (Payload, error) {
 	var payload Payload
 
 	token, err := jwt.ParseWithClaims(
-		rawToken,
+		key,
 		&tokenClaims{},
 		func(val *jwt.Token) (interface{}, error) {
-			return []byte(key), nil
+			return []byte(secretKey), nil
 		},
 	)
 

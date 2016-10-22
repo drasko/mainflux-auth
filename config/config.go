@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -16,7 +15,7 @@ type Config struct {
 
 func (cfg *Config) Load(file string) {
 	if _, err := toml.DecodeFile(file, &cfg); err != nil {
-		log.Fatalf("Cannot load config due to %s", err)
+		fmt.Printf("Cannot load config due to %s", err)
 		os.Exit(1)
 	}
 }
