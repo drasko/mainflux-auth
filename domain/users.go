@@ -22,7 +22,7 @@ func CreateUser(username, password string) (User, error) {
 
 	p, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return user, &AuthError{Code: http.StatusInternalServerError}
+		return user, &ServiceError{Code: http.StatusInternalServerError}
 	}
 
 	user.Password = string(p)
@@ -31,9 +31,9 @@ func CreateUser(username, password string) (User, error) {
 	masterScope := Scope{"RWX", "*", "*"}
 	payload := Payload{Scopes: []Scope{masterScope}}
 
-	user.MasterKey, err = CreateToken(user.Id, &payload)
+	user.MasterKey, err = CreateKey(user.Id, &payload)
 	if err != nil {
-		return user, &AuthError{Code: http.StatusInternalServerError}
+		return user, &ServiceError{Code: http.StatusInternalServerError}
 	}
 
 	return user, nil

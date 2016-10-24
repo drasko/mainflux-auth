@@ -49,7 +49,7 @@ func main() {
 	cfg.Load(opts.Config)
 
 	if cfg.SecretKey != "" {
-		domain.SetKey(cfg.SecretKey)
+		domain.SetSecretKey(cfg.SecretKey)
 	}
 
 	cache.Start(cfg.CacheURL())

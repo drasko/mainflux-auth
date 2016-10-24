@@ -6,7 +6,7 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
-const token string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwicmVzb3VyY2UiOiJjaGFubmVsIiwiaWQiOiJ0ZXN0LWlkIn1dLCJpc3MiOiJtYWluZmx1eCIsInN1YiI6InRlc3QtaWQifQ.QaAdnzbG17SVNb870sj0XKHhO8rPSu_xEvXbeb9PEp4"
+const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwicmVzb3VyY2UiOiJjaGFubmVsIiwiaWQiOiJ0ZXN0LWlkIn1dLCJpc3MiOiJtYWluZmx1eCIsInN1YiI6InRlc3QtaWQifQ.QaAdnzbG17SVNb870sj0XKHhO8rPSu_xEvXbeb9PEp4"
 
 var payload = domain.Payload{
 	[]domain.Scope{
@@ -18,20 +18,20 @@ var payload = domain.Payload{
 	},
 }
 
-func TestCreateToken(t *testing.T) {
+func TestCreateKey(t *testing.T) {
 	subject := "test-id"
-	actual, err := domain.CreateToken(subject, &payload)
+	actual, err := domain.CreateKey(subject, &payload)
 	if err != nil {
 		t.Error("failed to create JWT:", err)
 	}
 
-	if actual != token {
-		t.Errorf("expected %s got %s", token, actual)
+	if actual != key {
+		t.Errorf("expected %s got %s", key, actual)
 	}
 }
 
 func TestScopesOf(t *testing.T) {
-	actual, err := domain.ScopesOf(token)
+	actual, err := domain.ScopesOf(key)
 	if err != nil {
 		t.Error("failed to extract scopes:", err)
 	}
