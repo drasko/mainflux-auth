@@ -1,37 +1,14 @@
-###
-# Mainflux Dockerfile
-###
-# Set the base image to Node, onbuild variant: https://registry.hub.docker.com/_/node/
-
-FROM node:4.2.3
+FROM golang:1.7-alpine
 MAINTAINER Mainflux
 
-ENV MAINFLUX_AUTH_PORT=5566
+# copy the local package files into the container's workspace
+COPY . /go/src/github.com/mainflux/mainflux-auth-server
 
-RUN apt-get update -qq && apt-get install -y build-essential
+# build the service inside the container
+RUN go install github.com/mainflux/mainflux-auth-server
 
-RUN mkdir /mainflux-core
+# specify the service entrypoint
+CMD ["/go/bin/mainflux-auth-server"]
 
-###
-# Installations
-###
-# Add Gulp globally
-
-RUN npm install -g gulp
-RUN npm install -g nodemon
-
-# Finally, install all project Node modules
-COPY . /mainflux-auth
-WORKDIR /mainflux-auth
-RUN npm install
-
-EXPOSE $MAINFLUX_AUTH_PORT
-
-###
-# Run main command from entrypoint and parameters in CMD[]
-###
-
-CMD [""]
-
-# Set default container command
-ENTRYPOINT gulp
+# document exposed ports
+EXPOSE 8180

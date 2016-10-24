@@ -1,0 +1,39 @@
+hash: a249bb0b766d34e9dfd1660685eb0e94a4fb7e416861c1b898dc50e283c516e6
+updated: 2016-10-18T22:12:04.331229707+02:00
+imports:
+- name: github.com/BurntSushi/toml
+  version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
+- name: github.com/codegangsta/negroni
+  version: fde5e16d32adc7ad637e9cd9ad21d4ebc6192535
+- name: github.com/dgrijalva/jwt-go
+  version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
+- name: github.com/garyburd/redigo
+  version: 8873b2f1995f59d4bcdd2b0dc9858e2cb9bf0c13
+  subpackages:
+  - internal
+  - redis
+- name: github.com/julienschmidt/httprouter
+  version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: golang.org/x/crypto
+  version: 14f9af67c679edd414f72f13d67c917447113df2
+  subpackages:
+  - bcrypt
+testImports:
+- name: github.com/go-errors/errors
+  version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
+- name: github.com/go-sql-driver/mysql
+  version: 0b58b37b664c21f3010e836f1b931e1d0b0b0685
+- name: github.com/lib/pq
+  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  subpackages:
+  - oid
+- name: github.com/ory-am/common
+  version: d93c852f2d09c219fd058756caf67bbdf8cf4be4
+  subpackages:
+  - env
+- name: github.com/pborman/uuid
+  version: a97ce2ca70fa5a848076093f05e639a89ca34d06
+- name: gopkg.in/ory-am/dockertest.v2
+  version: 1b35e25f4895dff0155ac7b67f69f9aa3a275a76
