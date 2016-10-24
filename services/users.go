@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/garyburd/redigo/redis"
@@ -53,7 +52,6 @@ func AddUserKey(uid, key string, payload domain.Payload) (string, error) {
 	masterKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
 
 	if masterKey == "" {
-		fmt.Println("JEBITE SE FUDBALEEERIIIIII")
 		return "", &domain.ServiceError{Code: http.StatusNotFound}
 	}
 
