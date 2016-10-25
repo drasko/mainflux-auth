@@ -10,7 +10,7 @@ import (
 	"github.com/mainflux/mainflux-auth-server/services"
 )
 
-func AddDeviceKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func addDeviceKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	header := strings.Split(r.Header.Get("Authorization"), " ")
 	if len(header) != 2 {
 		w.WriteHeader(http.StatusForbidden)

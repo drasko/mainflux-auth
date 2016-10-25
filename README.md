@@ -1,6 +1,8 @@
 # Mainflux Auth Service
 
 [![License](https://img.shields.io/badge/license-Apache%20v2.0-blue.svg)](LICENSE)
+[![Build Status](https://travis-ci.org/mainflux/mainflux-auth-server.svg?branch=master)](https://travis-ci.org/mainflux/mainflux-auth-server)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Mainflux/mainflux-auth-server)](https://goreportcard.com/report/github.com/Mainflux/mainflux-auth-server)
 [![Join the chat at https://gitter.im/Mainflux/mainflux](https://badges.gitter.im/Join%20Chat.svg)][gitter]
 
 Mainflux IoT authentication and authorization management service.

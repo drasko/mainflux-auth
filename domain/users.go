@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// User represents one Mainflux user account.
 type User struct {
 	Id        string `json:"id"`
 	Username  string `json:"-"`
@@ -14,6 +15,10 @@ type User struct {
 	MasterKey string `json:"key"`
 }
 
+// CreateUser creates new user account based on provided username and password.
+// The account is assigned with one master key - a key with all permissions on
+// all owned resources regardless of their type. Provided password in encrypted
+// using bcrypt algorithm.
 func CreateUser(username, password string) (User, error) {
 	user := User{
 		Id:       uuid.NewV4().String(),

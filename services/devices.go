@@ -9,6 +9,9 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
+// AddDeviceKey adds new device key based on provided payload. Keep in mind
+// that the device key can be created only when identified as "master", i.e.
+// by providing a master key.
 func AddDeviceKey(userId, devId, key string, payload domain.Payload) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
