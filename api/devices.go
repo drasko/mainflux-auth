@@ -1,9 +1,7 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -20,36 +18,20 @@ func AddDeviceKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	}
 
 	apiKey := header[1]
-	body, err := ioutil.ReadAll(r.Body)
+
+	data, err := readPayload(r)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
 		return
 	}
 
-	data := domain.Payload{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if len(data.Scopes) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	for _, s := range data.Scopes {
-		if s.Actions == "" || s.Id == "" || s.Resource == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	}
-
-	uid := ps.ByName("user_id")
-	dev := ps.ByName("device_id")
-	key, err := services.AddDeviceKey(uid, dev, apiKey, data)
+	userId := ps.ByName("user_id")
+	devId := ps.ByName("device_id")
+	key, err := services.AddDeviceKey(userId, devId, apiKey, data)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
-		w.WriteHeader(serviceErr.Code)
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
 		return
 	}
 

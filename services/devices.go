@@ -9,11 +9,11 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
-func AddDeviceKey(uid, dev, key string, payload domain.Payload) (string, error) {
+func AddDeviceKey(userId, devId, key string, payload domain.Payload) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := "users:" + uid
+	cKey := fmt.Sprintf("users:%s", userId)
 	masterKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
 
 	if masterKey == "" {
@@ -24,12 +24,12 @@ func AddDeviceKey(uid, dev, key string, payload domain.Payload) (string, error) 
 		return "", &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
-	newKey, err := domain.CreateKey(uid, &payload)
+	newKey, err := domain.CreateKey(userId, &payload)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
 
-	cKey = fmt.Sprintf("users:%s:devices:%s:keys", uid, dev)
+	cKey = fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
 	_, err = c.Do("SADD", cKey, newKey)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}

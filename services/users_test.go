@@ -9,15 +9,18 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
+	username := "test"
+	password := "test"
+
 	cases := []struct {
 		username string
 		password string
 		code     int
 	}{
-		{"test", "test", 0},
-		{"test", "test", http.StatusConflict},
-		{"test", "", http.StatusBadRequest},
-		{"", "test", http.StatusBadRequest},
+		{username, password, 0},
+		{username, password, http.StatusConflict},
+		{username, "", http.StatusBadRequest},
+		{"", password, http.StatusBadRequest},
 	}
 
 	for _, c := range cases {
@@ -32,20 +35,15 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
-	uid, masterKey, err := fetchCredentials()
-	if err != nil {
-		t.Errorf("failed to retrieve created user data")
-	}
-
 	cases := []struct {
 		uid     string
 		key     string
 		payload domain.Payload
 		code    int
 	}{
-		{uid, masterKey, domain.Payload{}, 0},
-		{uid, "invalid-key", domain.Payload{}, http.StatusForbidden},
-		{"invalid-id", masterKey, domain.Payload{}, http.StatusNotFound},
+		{user.Id, user.MasterKey, domain.Payload{}, 0},
+		{user.Id, "invalid-key", domain.Payload{}, http.StatusForbidden},
+		{"invalid-id", user.MasterKey, domain.Payload{}, http.StatusNotFound},
 		{"invalid-id", "invalid-key", domain.Payload{}, http.StatusNotFound},
 	}
 

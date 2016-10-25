@@ -9,21 +9,15 @@ import (
 )
 
 func TestAddDeviceKey(t *testing.T) {
-	services.RegisterUser("test-dev", "test-dev")
-	uid, masterKey, err := fetchCredentials()
-	if err != nil {
-		t.Errorf("failed to retrieve created user data")
-	}
-
 	cases := []struct {
 		id      string
 		key     string
 		payload domain.Payload
 		code    int
 	}{
-		{uid, masterKey, domain.Payload{}, 0},
-		{uid, "invalid-key", domain.Payload{}, http.StatusForbidden},
-		{"invalid-id", masterKey, domain.Payload{}, http.StatusNotFound},
+		{user.Id, user.MasterKey, domain.Payload{}, 0},
+		{user.Id, "invalid-key", domain.Payload{}, http.StatusForbidden},
+		{"invalid-id", user.MasterKey, domain.Payload{}, http.StatusNotFound},
 		{"invalid-id", "invalid-key", domain.Payload{}, http.StatusNotFound},
 	}
 

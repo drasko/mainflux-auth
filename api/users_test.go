@@ -1,14 +1,10 @@
 package api_test
 
 import (
+	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/garyburd/redigo/redis"
-	"github.com/mainflux/mainflux-auth-server/api"
-	"github.com/mainflux/mainflux-auth-server/cache"
 )
 
 func TestRegisterUser(t *testing.T) {
@@ -17,16 +13,13 @@ func TestRegisterUser(t *testing.T) {
 		code int
 	}{
 		{`{"username":"test","password":"test"}`, 201},
-		{"1", 400},
+		{"malformed body", 400},
 		{`{"username":"","password":"test"}`, 400},
 		{`{"username":"test","password":""}`, 400},
 		{`{"username":"test","password":"test"}`, 409},
 	}
 
-	ts := httptest.NewServer(api.Server())
-	defer ts.Close()
-
-	url := ts.URL + "/users"
+	url := fmt.Sprintf("%s/users", ts.URL)
 
 	for _, c := range cases {
 		b := strings.NewReader(c.body)
@@ -43,32 +36,24 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
-	uid, masterKey, err := fetchCredentials()
-	if err != nil {
-		t.Error("failed to retrieve created user data")
-	}
-
 	cases := []struct {
 		header string
 		path   string
 		body   string
 		code   int
 	}{
-		{masterKey, uid, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 201},
-		{masterKey, uid, "1", 400},
-		{masterKey, uid, `{"scopes":[]}`, 400},
-		{masterKey, uid, `{"scopes":[{"actions":""}]}`, 400},
-		{"bad-key", uid, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
-		{"", uid, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
-		{masterKey, "", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
-		{masterKey, "bad-id", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 201},
+		{user.MasterKey, user.Id, "malformed body", 400},
+		{user.MasterKey, user.Id, `{"scopes":[]}`, 400},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":""}]}`, 400},
+		{"bad-key", user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
+		{"", user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
+		{user.MasterKey, "", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
+		{user.MasterKey, "bad-id", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
 	}
 
-	ts := httptest.NewServer(api.Server())
-	defer ts.Close()
-
 	for _, c := range cases {
-		url := ts.URL + "/users/" + c.path + "/api-keys"
+		url := fmt.Sprintf("%s/users/%s/api-keys", ts.URL, c.path)
 		b := strings.NewReader(c.body)
 
 		req, _ := http.NewRequest("POST", url, b)
@@ -85,32 +70,4 @@ func TestAddUserKey(t *testing.T) {
 			t.Errorf("expected status %d got %d", c.code, res.StatusCode)
 		}
 	}
-}
-
-func fetchCredentials() (string, string, error) {
-	c := cache.Connection()
-	vals, err := c.Do("KEYS", "users:*")
-	if err != nil {
-		return "", "", err
-	}
-
-	cKeys, err := redis.Strings(vals, err)
-	if err != nil {
-		return "", "", err
-	}
-
-	cKey := cKeys[0]
-	id := strings.Split(cKey, ":")[1]
-
-	cVal, err := c.Do("HGET", cKey, "masterKey")
-	if err != nil {
-		return "", "", err
-	}
-
-	token, err := redis.String(cVal, err)
-	if err != nil {
-		return "", "", err
-	}
-
-	return id, token, nil
 }

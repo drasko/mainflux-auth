@@ -50,35 +50,19 @@ func AddUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	apiKey := header[1]
-	body, err := ioutil.ReadAll(r.Body)
+
+	data, err := readPayload(r)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
 		return
 	}
 
-	data := domain.Payload{}
-	if err := json.Unmarshal(body, &data); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if len(data.Scopes) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	for _, s := range data.Scopes {
-		if s.Actions == "" || s.Id == "" || s.Resource == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-	}
-
-	uid := ps.ByName("user_id")
-	key, err := services.AddUserKey(uid, apiKey, data)
+	userId := ps.ByName("user_id")
+	key, err := services.AddUserKey(userId, apiKey, data)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
-		w.WriteHeader(serviceErr.Code)
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
 		return
 	}
 
