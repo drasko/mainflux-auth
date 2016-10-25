@@ -9,6 +9,8 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
+// RegisterUser invokes creation of new user account based on provided username
+// and password.
 func RegisterUser(username, password string) (domain.User, error) {
 	var user domain.User
 
@@ -45,6 +47,9 @@ func RegisterUser(username, password string) (domain.User, error) {
 	return user, nil
 }
 
+// AddUserKey adds secondary user key. Keep in mind that any additional keys
+// can be created only when identified as "master", i.e. by providing a master
+// key.
 func AddUserKey(userId, key string, payload domain.Payload) (string, error) {
 	c := cache.Connection()
 	defer c.Close()

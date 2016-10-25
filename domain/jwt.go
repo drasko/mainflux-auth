@@ -8,7 +8,6 @@ import (
 
 const issuer string = "mainflux"
 
-// default key value
 var secretKey string = "mainflux-api-key"
 
 type tokenClaims struct {
@@ -16,10 +15,14 @@ type tokenClaims struct {
 	jwt.StandardClaims
 }
 
+// SetSecretKey sets the secret key that will be used for decoding and encoding
+// generated tokens. If not invoked, a default key will be used instead.
 func SetSecretKey(key string) {
 	secretKey = key
 }
 
+// CreateKey creates new JSON Web Token containing provided subject and
+// payload.
 func CreateKey(subject string, payload *Payload) (string, error) {
 	claims := tokenClaims{
 		*payload,
@@ -38,6 +41,7 @@ func CreateKey(subject string, payload *Payload) (string, error) {
 	return raw, nil
 }
 
+// ScopesOf extracts the token payload given its string representation.
 func ScopesOf(key string) (Payload, error) {
 	var payload Payload
 

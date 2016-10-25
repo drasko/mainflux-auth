@@ -17,7 +17,7 @@ type userReq struct {
 	Password string `json:"password"`
 }
 
-func RegisterUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func registerUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -42,7 +42,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func AddUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func addUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	header := strings.Split(r.Header.Get("Authorization"), " ")
 	if len(header) != 2 {
 		w.WriteHeader(http.StatusForbidden)
