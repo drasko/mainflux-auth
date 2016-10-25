@@ -1,4 +1,4 @@
-package api
+package services_test
 
 import (
 	"log"
@@ -7,9 +7,17 @@ import (
 	"time"
 
 	"github.com/mainflux/mainflux-auth-server/cache"
-
-	"gopkg.in/ory-am/dockertest.v2"
+	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth-server/services"
+	dockertest "gopkg.in/ory-am/dockertest.v2"
 )
+
+const (
+	username string = "services-test-user"
+	password string = "services-test-pass"
+)
+
+var user domain.User
 
 func TestMain(m *testing.M) {
 	c, err := dockertest.ConnectToRedis(5, time.Second, func(url string) bool {
@@ -20,6 +28,9 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to start container: %s", err)
 	}
+
+	// initialize globals
+	user, _ = services.RegisterUser(username, password)
 
 	result := m.Run()
 

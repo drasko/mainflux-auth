@@ -36,8 +36,8 @@ func RegisterUser(username, password string) (domain.User, error) {
 	//
 	// NOTE: consider using MULTI to ensure consistency
 	//
-	cKey := "users:" + user.Username
-	_, err = c.Do("HMSET", cKey, "id", user.Id, "password", user.Password, "masterKey", user.MasterKey)
+	cKey := fmt.Sprintf("users:%s", user.Id)
+	_, err = c.Do("HMSET", cKey, "username", user.Username, "password", user.Password, "masterKey", user.MasterKey)
 	if err != nil {
 		return user, &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
@@ -45,15 +45,14 @@ func RegisterUser(username, password string) (domain.User, error) {
 	return user, nil
 }
 
-func AddUserKey(uid, key string, payload domain.Payload) (string, error) {
+func AddUserKey(userId, key string, payload domain.Payload) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := "users:" + uid
+	cKey := fmt.Sprintf("users:%s", userId)
 	masterKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
 
 	if masterKey == "" {
-		fmt.Println("JEBITE SE FUDBALEEERIIIIII")
 		return "", &domain.ServiceError{Code: http.StatusNotFound}
 	}
 
@@ -61,12 +60,12 @@ func AddUserKey(uid, key string, payload domain.Payload) (string, error) {
 		return "", &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
-	newKey, err := domain.CreateKey(uid, &payload)
+	newKey, err := domain.CreateKey(userId, &payload)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
 
-	cKey = cKey + ":keys"
+	cKey = fmt.Sprintf("users:%s:keys", userId)
 	_, err = c.Do("SADD", cKey, newKey)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}

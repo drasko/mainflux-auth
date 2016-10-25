@@ -12,6 +12,7 @@ func Server() http.Handler {
 	mux.GET("/status", HealthCheck)
 	mux.POST("/users", RegisterUser)
 	mux.POST("/users/:user_id/api-keys", AddUserKey)
+	mux.POST("/users/:user_id/devices/:device_id/api-keys", AddDeviceKey)
 
 	n := negroni.Classic()
 	n.UseHandler(mux)
