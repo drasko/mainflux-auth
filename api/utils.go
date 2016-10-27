@@ -16,7 +16,7 @@ func readPayload(r *http.Request) (domain.Payload, error) {
 		return data, &domain.ServiceError{Code: http.StatusBadRequest}
 	}
 
-	if err := json.Unmarshal(body, &data); err != nil {
+	if err = json.Unmarshal(body, &data); err != nil {
 		return data, &domain.ServiceError{Code: http.StatusBadRequest}
 	}
 

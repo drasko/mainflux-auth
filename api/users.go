@@ -25,7 +25,7 @@ func registerUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	data := &userReq{}
-	if err := json.Unmarshal(body, data); err != nil {
+	if err = json.Unmarshal(body, data); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
