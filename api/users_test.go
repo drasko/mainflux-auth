@@ -21,16 +21,16 @@ func TestRegisterUser(t *testing.T) {
 
 	url := fmt.Sprintf("%s/users", ts.URL)
 
-	for _, c := range cases {
+	for i, c := range cases {
 		b := strings.NewReader(c.body)
 
 		res, err := http.Post(url, "application/json", b)
 		if err != nil {
-			t.Error("cannot make a request:", err)
+			t.Errorf("case %d: %s", i+1, err.Error())
 		}
 
 		if res.StatusCode != c.code {
-			t.Errorf("expected status %d got %d", c.code, res.StatusCode)
+			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
 		}
 	}
 }
@@ -42,17 +42,17 @@ func TestAddUserKey(t *testing.T) {
 		body   string
 		code   int
 	}{
-		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 201},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 201},
 		{user.MasterKey, user.Id, "malformed body", 400},
 		{user.MasterKey, user.Id, `{"scopes":[]}`, 400},
-		{user.MasterKey, user.Id, `{"scopes":[{"actions":""}]}`, 400},
-		{"bad-key", user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
-		{"", user.Id, `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 403},
-		{user.MasterKey, "", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
-		{user.MasterKey, "bad-id", `{"scopes":[{"actions":"RW","resource":"*","id":"*"}]}`, 404},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"bad"}]}`, 400},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"bad","id":"*"}]}`, 400},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"device"}]}`, 400},
+		{"bad", user.Id, `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 403},
+		{user.MasterKey, "bad", `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 404},
 	}
 
-	for _, c := range cases {
+	for i, c := range cases {
 		url := fmt.Sprintf("%s/users/%s/api-keys", ts.URL, c.path)
 		b := strings.NewReader(c.body)
 
@@ -63,11 +63,11 @@ func TestAddUserKey(t *testing.T) {
 		cli := &http.Client{}
 		res, err := cli.Do(req)
 		if err != nil {
-			t.Error("cannot make a request:", err)
+			t.Errorf("case %d: %s", i+1, err.Error())
 		}
 
 		if res.StatusCode != c.code {
-			t.Errorf("expected status %d got %d", c.code, res.StatusCode)
+			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
 		}
 	}
 }

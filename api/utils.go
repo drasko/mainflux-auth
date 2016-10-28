@@ -8,8 +8,8 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
-func readPayload(r *http.Request) (domain.Payload, error) {
-	data := domain.Payload{}
+func readPayload(r *http.Request) (domain.AccessSpec, error) {
+	data := domain.AccessSpec{}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

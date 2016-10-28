@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"errors"
+	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -10,8 +10,8 @@ const issuer string = "mainflux"
 
 var secretKey string = "mainflux-api-key"
 
-type tokenClaims struct {
-	Payload
+type KeyData struct {
+	AccessSpec
 	jwt.StandardClaims
 }
 
@@ -22,44 +22,44 @@ func SetSecretKey(key string) {
 }
 
 // CreateKey creates new JSON Web Token containing provided subject and
-// payload.
-func CreateKey(subject string, payload *Payload) (string, error) {
-	claims := tokenClaims{
-		*payload,
+// access specification.
+func CreateKey(subject string, access *AccessSpec) (string, error) {
+	data := KeyData{
+		*access,
 		jwt.StandardClaims{
 			Issuer:  issuer,
 			Subject: subject,
 		},
 	}
 
-	key := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	key := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 	raw, err := key.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", err
+		return "", &ServiceError{http.StatusInternalServerError, err.Error()}
 	}
 
 	return raw, nil
 }
 
-// ScopesOf extracts the token payload given its string representation.
-func ScopesOf(key string) (Payload, error) {
-	var payload Payload
+// ContentOf extracts the key data given its string representation.
+func ContentOf(key string) (KeyData, error) {
+	data := KeyData{}
 
 	token, err := jwt.ParseWithClaims(
 		key,
-		&tokenClaims{},
+		&data,
 		func(val *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
 		},
 	)
 
 	if err != nil {
-		return payload, err
+		return data, &ServiceError{http.StatusBadRequest, err.Error()}
 	}
 
-	if claims, ok := token.Claims.(*tokenClaims); ok && token.Valid {
-		return claims.Payload, nil
+	if token.Valid {
+		return data, nil
 	}
 
-	return payload, errors.New("failed to retrieve claims")
+	return data, &ServiceError{http.StatusForbidden, err.Error()}
 }

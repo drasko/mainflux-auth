@@ -32,13 +32,13 @@ func CreateUser(username, password string) (User, error) {
 
 	user.Password = string(p)
 
-	// master payload: can do everything on all resources
-	masterScope := Scope{"RWX", "*", "*"}
-	payload := Payload{Scopes: []Scope{masterScope}}
+	// master access: can do everything on all resources
+	scope := Scope{"RWX", "*", "*"}
+	access := AccessSpec{Scopes: []Scope{scope}}
 
-	user.MasterKey, err = CreateKey(user.Id, &payload)
+	user.MasterKey, err = CreateKey(user.Id, &access)
 	if err != nil {
-		return user, &ServiceError{Code: http.StatusInternalServerError}
+		return user, err
 	}
 
 	return user, nil

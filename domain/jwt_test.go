@@ -8,7 +8,7 @@ import (
 
 const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwicmVzb3VyY2UiOiJjaGFubmVsIiwiaWQiOiJ0ZXN0LWlkIn1dLCJpc3MiOiJtYWluZmx1eCIsInN1YiI6InRlc3QtaWQifQ.QaAdnzbG17SVNb870sj0XKHhO8rPSu_xEvXbeb9PEp4"
 
-var payload = domain.Payload{
+var access = domain.AccessSpec{
 	[]domain.Scope{
 		domain.Scope{
 			Actions:  "R",
@@ -20,7 +20,7 @@ var payload = domain.Payload{
 
 func TestCreateKey(t *testing.T) {
 	subject := "test-id"
-	actual, err := domain.CreateKey(subject, &payload)
+	actual, err := domain.CreateKey(subject, &access)
 	if err != nil {
 		t.Error("failed to create JWT:", err)
 	}
@@ -30,29 +30,46 @@ func TestCreateKey(t *testing.T) {
 	}
 }
 
-func TestScopesOf(t *testing.T) {
-	actual, err := domain.ScopesOf(key)
-	if err != nil {
-		t.Error("failed to extract scopes:", err)
+func TestContentOf(t *testing.T) {
+	cases := []struct {
+		in     string
+		hasErr bool
+	}{
+		{key, false},
+		{"bad", true},
 	}
 
-	if len(actual.Scopes) != len(payload.Scopes) {
-		t.Error("scopes are not of the same length")
-	}
+	for i, c := range cases {
+		content, err := domain.ContentOf(c.in)
+		if err != nil {
+			if !c.hasErr {
+				t.Errorf("case %d: didn't expect an error", i+1)
+			}
 
-	for i, s := range actual.Scopes {
-		out := payload.Scopes[i]
-
-		if s.Actions != out.Actions {
-			t.Errorf("expected %s got %s", out.Actions, s.Actions)
+			continue
 		}
 
-		if s.Resource != out.Resource {
-			t.Errorf("expected %s got %s", out.Resource, s.Resource)
+		if c.hasErr {
+			t.Errorf("case %d: expected error to be thrown", i+1)
 		}
 
-		if s.Id != out.Id {
-			t.Errorf("expected %s got %s", out.Id, s.Id)
+		if len(content.Scopes) != len(access.Scopes) {
+			t.Errorf("case %d: scopes are not of the same length", i+1)
+		}
+
+		for j, s := range content.Scopes {
+			out := access.Scopes[j]
+			if s.Actions != out.Actions {
+				t.Errorf("case %d: expected %s got %s", i+1, out.Actions, s.Actions)
+			}
+
+			if s.Resource != out.Resource {
+				t.Errorf("case %d: expected %s got %s", i+1, out.Resource, s.Resource)
+			}
+
+			if s.Id != out.Id {
+				t.Errorf("case %d: expected %s got %s", i+1, out.Id, s.Id)
+			}
 		}
 	}
 }
