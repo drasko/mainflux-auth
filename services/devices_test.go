@@ -9,7 +9,7 @@ import (
 )
 
 func TestAddDeviceKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{domain.Scope{Actions: "R", Resource: "device", Id: "test-id"}}}
+	access := domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "device", "test-id"}}}
 
 	cases := []struct {
 		id     string

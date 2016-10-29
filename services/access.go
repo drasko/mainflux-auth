@@ -12,7 +12,7 @@ import (
 
 // CheckPermissions checks whether or not a provided key has sufficient
 // permissions to perform specified action on a specified resource.
-func CheckPermissions(req domain.AccessRequest) error {
+func CheckPermissions(req *domain.AccessRequest) error {
 	if valid := req.Validate(); !valid {
 		return &domain.ServiceError{Code: http.StatusBadRequest}
 	}
@@ -25,15 +25,20 @@ func CheckPermissions(req domain.AccessRequest) error {
 	c := cache.Connection()
 	defer c.Close()
 
-	err = checkUserKeys(c, req, content)
+	err = checkMasterKey(c, req, &content)
+
 	if err != nil {
-		return checkDeviceKeys(c, req, content)
+		err = checkUserKeys(c, req, &content)
+	}
+
+	if err != nil {
+		err = checkDeviceKeys(c, req, &content)
 	}
 
 	return err
 }
 
-func checkUserKeys(c redis.Conn, req domain.AccessRequest, content domain.KeyData) error {
+func checkMasterKey(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
 	userId := content.Subject
 
 	cKey := fmt.Sprintf("users:%s", userId)
@@ -42,24 +47,41 @@ func checkUserKeys(c redis.Conn, req domain.AccessRequest, content domain.KeyDat
 		return &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
 
-	if mKey == req.Key {
+	if mKey != req.Key {
+		return &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	if req.Resource == "user" && req.Id == userId {
 		return nil
 	}
 
-	cKey = fmt.Sprintf("users:%s:keys", userId)
-	exists, err := redis.Bool(c.Do("SISMEMBER", cKey, req.Key))
-	if err != nil {
-		return &domain.ServiceError{Code: http.StatusInternalServerError}
+	if req.Resource != "user" {
+		devId := req.Id
+		if req.Resource == "channel" {
+			devId = req.Device
+		}
+
+		cKey := fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
+		if exists, _ := redis.Bool(c.Do("EXISTS", cKey, req.Key)); exists {
+			return nil
+		}
 	}
 
-	if !exists {
+	return &domain.ServiceError{Code: http.StatusForbidden}
+}
+
+func checkUserKeys(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
+	userId := content.Subject
+	cKey := fmt.Sprintf("users:%s:keys", userId)
+
+	if exists, _ := redis.Bool(c.Do("SISMEMBER", cKey, req.Key)); !exists {
 		return &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
 	return checkScopes(req, content)
 }
 
-func checkDeviceKeys(c redis.Conn, req domain.AccessRequest, content domain.KeyData) error {
+func checkDeviceKeys(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
 	userId := content.Subject
 
 	devId := req.Id
@@ -68,19 +90,14 @@ func checkDeviceKeys(c redis.Conn, req domain.AccessRequest, content domain.KeyD
 	}
 
 	cKey := fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
-	exists, err := redis.Bool(c.Do("SISMEMBER", cKey, req.Key))
-	if err != nil {
-		return &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	if !exists {
+	if exists, _ := redis.Bool(c.Do("SISMEMBER", cKey, req.Key)); !exists {
 		return &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
 	return checkScopes(req, content)
 }
 
-func checkScopes(req domain.AccessRequest, content domain.KeyData) error {
+func checkScopes(req *domain.AccessRequest, content *domain.KeyData) error {
 	for _, s := range content.Scopes {
 		if s.Resource == req.Resource && s.Id == req.Id && strings.Contains(s.Actions, req.Action) {
 			return nil

@@ -17,8 +17,8 @@ func checkCredentials(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 		return
 	}
 
-	data := domain.AccessRequest{}
-	if err = json.Unmarshal(body, &data); err != nil {
+	data := &domain.AccessRequest{}
+	if err = json.Unmarshal(body, data); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

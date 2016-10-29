@@ -14,7 +14,12 @@ func TestCheckCredentials(t *testing.T) {
 	var (
 		devId  string            = "test-device"
 		chanId string            = "test-chan"
-		spec   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "channel", chanId}, domain.Scope{"RW", "device", devId}}}
+		spec   domain.AccessSpec = domain.AccessSpec{
+			[]domain.Scope{
+				domain.Scope{"R", "channel", chanId},
+				domain.Scope{"RW", "device", devId},
+			},
+		}
 	)
 
 	key, _ := services.AddUserKey(user.Id, user.MasterKey, spec)
