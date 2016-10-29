@@ -47,25 +47,29 @@ func RegisterUser(username, password string) (domain.User, error) {
 	return user, nil
 }
 
-// AddUserKey adds secondary user key. Keep in mind that any additional keys
+// AddUserKey adds secondary user key. Bear in mind that any additional keys
 // can be created only when identified as "master", i.e. by providing a master
 // key.
-func AddUserKey(userId, key string, payload domain.Payload) (string, error) {
+func AddUserKey(userId, key string, access domain.AccessSpec) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
 	cKey := fmt.Sprintf("users:%s", userId)
-	masterKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
+	mKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
 
-	if masterKey == "" {
+	if mKey == "" {
 		return "", &domain.ServiceError{Code: http.StatusNotFound}
 	}
 
-	if key != masterKey {
+	if key != mKey {
 		return "", &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
-	newKey, err := domain.CreateKey(userId, &payload)
+	if valid := access.Validate(); !valid {
+		return "", &domain.ServiceError{Code: http.StatusBadRequest}
+	}
+
+	newKey, err := domain.CreateKey(userId, &access)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
 	}

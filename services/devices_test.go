@@ -9,31 +9,33 @@ import (
 )
 
 func TestAddDeviceKey(t *testing.T) {
+	access := domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "device", "test-id"}}}
+
 	cases := []struct {
-		id      string
-		key     string
-		payload domain.Payload
-		code    int
+		id     string
+		key    string
+		access domain.AccessSpec
+		code   int
 	}{
-		{user.Id, user.MasterKey, domain.Payload{}, 0},
-		{user.Id, "invalid-key", domain.Payload{}, http.StatusForbidden},
-		{"invalid-id", user.MasterKey, domain.Payload{}, http.StatusNotFound},
-		{"invalid-id", "invalid-key", domain.Payload{}, http.StatusNotFound},
+		{user.Id, user.MasterKey, access, 0},
+		{"bad", user.MasterKey, access, http.StatusNotFound},
+		{user.Id, "bad", access, http.StatusForbidden},
+		{user.Id, user.MasterKey, domain.AccessSpec{}, http.StatusBadRequest},
+		{"bad", "bad", domain.AccessSpec{}, http.StatusNotFound},
 	}
 
-	for _, c := range cases {
-		key, err := services.AddDeviceKey(c.id, c.id, c.key, c.payload)
+	for i, c := range cases {
+		key, err := services.AddDeviceKey(c.id, c.id, c.key, c.access)
 		if err != nil {
 			auth := err.(*domain.ServiceError)
 			if auth.Code != c.code {
-				t.Errorf("expected %d got %d", c.code, auth.Code)
+				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
 			}
 			continue
 		}
 
 		if key == "" {
-			t.Errorf("expected key to be created")
+			t.Errorf("case %d: expected key to be created", i+1)
 		}
 	}
-
 }

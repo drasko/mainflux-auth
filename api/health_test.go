@@ -22,24 +22,24 @@ func TestHealthCheck(t *testing.T) {
 
 	url := ts.URL + "/status"
 
-	for _, c := range cases {
+	for i, c := range cases {
 		res, err := http.Get(url)
 		if err != nil {
-			t.Error("cannot make a request:", err)
+			t.Errorf("case %d: %s", i+1, err.Error())
 		}
 
 		if res.StatusCode != c.code {
-			t.Errorf("expected status %d got %d", c.code, res.StatusCode)
+			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
 		}
 
 		body, err := ioutil.ReadAll(res.Body)
 		res.Body.Close()
 		if err != nil {
-			t.Fatal("cannot read response:", err)
+			t.Fatalf("case %d: %s", i+1, err.Error())
 		}
 
 		if c.body != string(body) {
-			t.Errorf("expected response %s got %s", c.body, string(body))
+			t.Errorf("case %d: expected response %s got %s", i+1, c.body, string(body))
 		}
 	}
 }

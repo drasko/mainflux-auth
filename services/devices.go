@@ -9,10 +9,10 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
-// AddDeviceKey adds new device key based on provided payload. Keep in mind
+// AddDeviceKey adds new device key based on provided access spec. Bear in mind
 // that the device key can be created only when identified as "master", i.e.
 // by providing a master key.
-func AddDeviceKey(userId, devId, key string, payload domain.Payload) (string, error) {
+func AddDeviceKey(userId, devId, key string, access domain.AccessSpec) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
@@ -27,7 +27,11 @@ func AddDeviceKey(userId, devId, key string, payload domain.Payload) (string, er
 		return "", &domain.ServiceError{Code: http.StatusForbidden}
 	}
 
-	newKey, err := domain.CreateKey(userId, &payload)
+	if valid := access.Validate(); !valid {
+		return "", &domain.ServiceError{Code: http.StatusBadRequest}
+	}
+
+	newKey, err := domain.CreateKey(userId, &access)
 	if err != nil {
 		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
