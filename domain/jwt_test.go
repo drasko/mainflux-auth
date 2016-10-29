@@ -6,15 +6,11 @@ import (
 	"github.com/mainflux/mainflux-auth-server/domain"
 )
 
-const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwicmVzb3VyY2UiOiJjaGFubmVsIiwiaWQiOiJ0ZXN0LWlkIn1dLCJpc3MiOiJtYWluZmx1eCIsInN1YiI6InRlc3QtaWQifQ.QaAdnzbG17SVNb870sj0XKHhO8rPSu_xEvXbeb9PEp4"
+const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwidHlwZSI6ImNoYW5uZWwiLCJpZCI6InRlc3QtaWQifV0sImlzcyI6Im1haW5mbHV4Iiwic3ViIjoidGVzdC1pZCJ9.lvEUcdxg2TX9lpsaCblXs7L7xUaq5nosEgez4vzlQMo"
 
 var access = domain.AccessSpec{
 	[]domain.Scope{
-		domain.Scope{
-			Actions:  "R",
-			Resource: "channel",
-			Id:       "test-id",
-		},
+		domain.Scope{"R", "channel", "test-id"},
 	},
 }
 
@@ -63,8 +59,8 @@ func TestContentOf(t *testing.T) {
 				t.Errorf("case %d: expected %s got %s", i+1, out.Actions, s.Actions)
 			}
 
-			if s.Resource != out.Resource {
-				t.Errorf("case %d: expected %s got %s", i+1, out.Resource, s.Resource)
+			if s.Type != out.Type {
+				t.Errorf("case %d: expected %s got %s", i+1, out.Type, s.Type)
 			}
 
 			if s.Id != out.Id {

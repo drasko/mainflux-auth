@@ -11,9 +11,9 @@ import (
 // mind that the '*' is treated as wild card - it can be used to indicate
 // "all" available resource types and "all" resource identifiers.
 type Scope struct {
-	Actions  string `json:"actions"`
-	Resource string `json:"resource"`
-	Id       string `json:"id"`
+	Actions string `json:"actions"`
+	Type    string `json:"type"`
+	Id      string `json:"id"`
 }
 
 // Payload represents a collection of resource access scope. It will be
@@ -48,8 +48,8 @@ func (a *AccessSpec) Validate() bool {
 			return false
 		}
 
-		s.Resource = strings.ToLower(s.Resource)
-		if s.Resource != "channel" && s.Resource != "device" && s.Resource != "user" {
+		s.Type = strings.ToLower(s.Type)
+		if s.Type != "channel" && s.Type != "device" && s.Type != "user" {
 			return false
 		}
 	}
@@ -59,23 +59,19 @@ func (a *AccessSpec) Validate() bool {
 
 // AccessRequest specifies a system request that needs to be authorized.
 type AccessRequest struct {
-	Action   string `json:"action"`
-	Resource string `json:"resource"`
-	Id       string `json:"id"`
-	Device   string `json:"device"`
-	Key      string `json:"key"`
+	Action string `json:"action"`
+	Type   string `json:"type"`
+	Id     string `json:"id"`
+	Owner  string `json:"owner"`
+	Key    string `json:"key"`
 }
 
 // Validate will try to validate an access request. The structure will be
 // tested against the following conditions: an action can be any value from
-// "RWX", a resource can be either "channel", "device" or "user", and an id
-// cannot be empty.
+// "RWX", a type can be either "channel", "device" or "user", and none of the
+// remaining fields can be empty.
 func (a *AccessRequest) Validate() bool {
-	if a.Id == "" {
-		return false
-	}
-
-	if len(a.Action) != 1 {
+	if len(a.Action) != 1 || a.Type == "" || a.Id == "" || a.Owner == "" || a.Key == "" {
 		return false
 	}
 
@@ -84,12 +80,8 @@ func (a *AccessRequest) Validate() bool {
 		return false
 	}
 
-	a.Resource = strings.ToLower(a.Resource)
-	if a.Resource != "channel" && a.Resource != "device" && a.Resource != "user" {
-		return false
-	}
-
-	if a.Resource == "channel" && a.Device == "" {
+	a.Type = strings.ToLower(a.Type)
+	if a.Type != "channel" && a.Type != "device" && a.Type != "user" {
 		return false
 	}
 

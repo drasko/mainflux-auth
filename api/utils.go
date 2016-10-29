@@ -20,14 +20,8 @@ func readPayload(r *http.Request) (domain.AccessSpec, error) {
 		return data, &domain.ServiceError{Code: http.StatusBadRequest}
 	}
 
-	if len(data.Scopes) == 0 {
+	if valid := data.Validate(); !valid {
 		return data, &domain.ServiceError{Code: http.StatusBadRequest}
-	}
-
-	for _, s := range data.Scopes {
-		if s.Actions == "" || s.Id == "" || s.Resource == "" {
-			return data, &domain.ServiceError{Code: http.StatusBadRequest}
-		}
 	}
 
 	return data, nil

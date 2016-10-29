@@ -42,14 +42,14 @@ func TestAddUserKey(t *testing.T) {
 		body   string
 		code   int
 	}{
-		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 201},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","type":"device","id":"*"}]}`, 201},
 		{user.MasterKey, user.Id, "malformed body", 400},
 		{user.MasterKey, user.Id, `{"scopes":[]}`, 400},
 		{user.MasterKey, user.Id, `{"scopes":[{"actions":"bad"}]}`, 400},
-		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"bad","id":"*"}]}`, 400},
-		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","resource":"device"}]}`, 400},
-		{"bad", user.Id, `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 403},
-		{user.MasterKey, "bad", `{"scopes":[{"actions":"RW","resource":"device","id":"*"}]}`, 404},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","type":"bad","id":"*"}]}`, 400},
+		{user.MasterKey, user.Id, `{"scopes":[{"actions":"RW","type":"device"}]}`, 400},
+		{"bad", user.Id, `{"scopes":[{"actions":"RW","type":"device","id":"*"}]}`, 403},
+		{user.MasterKey, "bad", `{"scopes":[{"actions":"RW","type":"device","id":"*"}]}`, 404},
 	}
 
 	for i, c := range cases {

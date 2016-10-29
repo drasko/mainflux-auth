@@ -44,12 +44,12 @@ func TestAccessRequestValidate(t *testing.T) {
 		domain.AccessRequest
 		valid bool
 	}{
-		{domain.AccessRequest{"R", "user", "id", "", "key"}, true},
-		{domain.AccessRequest{"W", "user", "id", "", "key"}, true},
-		{domain.AccessRequest{"X", "user", "id", "", "key"}, true},
-		{domain.AccessRequest{"R", "device", "id", "", "key"}, true},
-		{domain.AccessRequest{"W", "device", "id", "", "key"}, true},
-		{domain.AccessRequest{"X", "device", "id", "", "key"}, true},
+		{domain.AccessRequest{"R", "user", "id", "owner", "key"}, true},
+		{domain.AccessRequest{"W", "user", "id", "owner", "key"}, true},
+		{domain.AccessRequest{"X", "user", "id", "owner", "key"}, true},
+		{domain.AccessRequest{"R", "device", "id", "owner", "key"}, true},
+		{domain.AccessRequest{"W", "device", "id", "owner", "key"}, true},
+		{domain.AccessRequest{"X", "device", "id", "owner", "key"}, true},
 		{domain.AccessRequest{"R", "channel", "id", "dev", "key"}, true},
 		{domain.AccessRequest{"W", "channel", "id", "dev", "key"}, true},
 		{domain.AccessRequest{"X", "channel", "id", "dev", "key"}, true},
@@ -57,7 +57,7 @@ func TestAccessRequestValidate(t *testing.T) {
 		{domain.AccessRequest{"R", "channel", "id", "", "key"}, false},
 		{domain.AccessRequest{"X", "channel", "", "dev", "key"}, false},
 		{domain.AccessRequest{"W", "bad", "id", "dev", "key"}, false},
-		{domain.AccessRequest{"bad", "user", "id", "", "key"}, false},
+		{domain.AccessRequest{"bad", "user", "id", "owner", "key"}, false},
 	}
 
 	for i, c := range cases {

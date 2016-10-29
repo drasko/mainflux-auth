@@ -25,84 +25,108 @@ func CheckPermissions(req *domain.AccessRequest) error {
 	c := cache.Connection()
 	defer c.Close()
 
-	err = checkMasterKey(c, req, &content)
-
-	if err != nil {
-		err = checkUserKeys(c, req, &content)
-	}
-
-	if err != nil {
-		err = checkDeviceKeys(c, req, &content)
-	}
-
-	return err
+	ac := &accessChecker{db: c, req: req, data: content}
+	ac.check()
+	return ac.err
 }
 
-func checkMasterKey(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
-	userId := content.Subject
+type accessChecker struct {
+	db   redis.Conn
+	req  *domain.AccessRequest
+	data domain.KeyData
+	err  error
+}
 
+func (ac *accessChecker) check() {
+	ac.verifyOwnership()
+	if ac.err == nil {
+		ac.checkMasterKey()
+		ac.checkUserKeys()
+		ac.checkDeviceKeys()
+	}
+}
+
+func (ac *accessChecker) verifyOwnership() {
+	userId := ac.data.Subject
+	if (ac.req.Type == "user" || ac.req.Type == "device") && userId != ac.req.Owner {
+		ac.err = &domain.ServiceError{Code: http.StatusForbidden}
+		return
+	}
+}
+
+func (ac *accessChecker) checkMasterKey() {
+	userId := ac.data.Subject
 	cKey := fmt.Sprintf("users:%s", userId)
-	mKey, err := redis.String(c.Do("HGET", cKey, "masterKey"))
-	if err != nil {
-		return &domain.ServiceError{Code: http.StatusInternalServerError}
+
+	mKey, _ := redis.String(ac.db.Do("HGET", cKey, "masterKey"))
+	if mKey != ac.req.Key {
+		ac.err = &domain.ServiceError{Code: http.StatusForbidden}
+		return
 	}
 
-	if mKey != req.Key {
-		return &domain.ServiceError{Code: http.StatusForbidden}
+	if ac.req.Type == "user" && ac.req.Id == userId {
+		return
 	}
 
-	if req.Resource == "user" && req.Id == userId {
-		return nil
-	}
-
-	if req.Resource != "user" {
-		devId := req.Id
-		if req.Resource == "channel" {
-			devId = req.Device
+	if ac.req.Type != "user" {
+		devId := ac.req.Id
+		if ac.req.Type == "channel" {
+			devId = ac.req.Owner
 		}
 
 		cKey := fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
-		if exists, _ := redis.Bool(c.Do("EXISTS", cKey, req.Key)); exists {
-			return nil
+		if exists, _ := redis.Bool(ac.db.Do("EXISTS", cKey, ac.req.Key)); exists {
+			return
 		}
 	}
 
-	return &domain.ServiceError{Code: http.StatusForbidden}
+	ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 }
 
-func checkUserKeys(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
-	userId := content.Subject
-	cKey := fmt.Sprintf("users:%s:keys", userId)
-
-	if exists, _ := redis.Bool(c.Do("SISMEMBER", cKey, req.Key)); !exists {
-		return &domain.ServiceError{Code: http.StatusForbidden}
+func (ac *accessChecker) checkUserKeys() {
+	if ac.err == nil {
+		return
 	}
 
-	return checkScopes(req, content)
+	userId := ac.data.Subject
+	cKey := fmt.Sprintf("users:%s:keys", userId)
+
+	if exists, _ := redis.Bool(ac.db.Do("SISMEMBER", cKey, ac.req.Key)); exists {
+		ac.checkScopes()
+		return
+	}
+
+	ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 }
 
-func checkDeviceKeys(c redis.Conn, req *domain.AccessRequest, content *domain.KeyData) error {
-	userId := content.Subject
+func (ac *accessChecker) checkDeviceKeys() {
+	if ac.err == nil {
+		return
+	}
 
-	devId := req.Id
-	if req.Resource == "channel" {
-		devId = req.Device
+	userId := ac.data.Subject
+
+	devId := ac.req.Id
+	if ac.req.Type == "channel" {
+		devId = ac.req.Owner
 	}
 
 	cKey := fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
-	if exists, _ := redis.Bool(c.Do("SISMEMBER", cKey, req.Key)); !exists {
-		return &domain.ServiceError{Code: http.StatusForbidden}
+	if exists, _ := redis.Bool(ac.db.Do("SISMEMBER", cKey, ac.req.Key)); exists {
+		ac.checkScopes()
+		return
 	}
 
-	return checkScopes(req, content)
+	ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 }
 
-func checkScopes(req *domain.AccessRequest, content *domain.KeyData) error {
-	for _, s := range content.Scopes {
-		if s.Resource == req.Resource && s.Id == req.Id && strings.Contains(s.Actions, req.Action) {
-			return nil
+func (ac *accessChecker) checkScopes() {
+	for _, s := range ac.data.Scopes {
+		if s.Type == ac.req.Type && s.Id == ac.req.Id && strings.Contains(s.Actions, ac.req.Action) {
+			ac.err = nil
+			return
 		}
 	}
 
-	return &domain.ServiceError{Code: http.StatusForbidden}
+	ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 }
