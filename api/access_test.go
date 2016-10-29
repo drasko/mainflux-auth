@@ -16,8 +16,8 @@ func TestCheckCredentials(t *testing.T) {
 		chanId string            = "test-chan"
 		spec   domain.AccessSpec = domain.AccessSpec{
 			[]domain.Scope{
-				domain.Scope{"R", "channel", chanId},
-				domain.Scope{"RW", "device", devId},
+				{"R", "channel", chanId},
+				{"RW", "device", devId},
 			},
 		}
 	)

@@ -11,24 +11,24 @@ func TestAccessSpecValidate(t *testing.T) {
 		domain.AccessSpec
 		valid bool
 	}{
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "user", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"RW", "user", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"RWX", "user", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"RW", "user", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"RWX", "user", "id"}}}, true},
 
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"W", "device", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"WR", "device", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"XWR", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"W", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"WR", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XWR", "device", "id"}}}, true},
 
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"X", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"XR", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"XRW", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "user", "id"}, domain.Scope{"RW", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"X", "channel", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XR", "channel", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XRW", "channel", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}, {"RW", "device", "id"}}}, true},
 
 		{domain.AccessSpec{}, false},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"bad", "user", "id"}}}, false},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "bad", "id"}}}, false},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "user", ""}}}, false},
-		{domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "user", "id"}, domain.Scope{"R", "bad", ""}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"bad", "user", "id"}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"R", "bad", "id"}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"R", "user", ""}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}, {"R", "bad", ""}}}, false},
 	}
 
 	for i, c := range cases {

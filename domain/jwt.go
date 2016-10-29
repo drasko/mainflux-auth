@@ -10,6 +10,7 @@ const issuer string = "mainflux"
 
 var secretKey string = "mainflux-api-key"
 
+// KeyData represents the contents of a JWT payload.
 type KeyData struct {
 	AccessSpec
 	jwt.StandardClaims

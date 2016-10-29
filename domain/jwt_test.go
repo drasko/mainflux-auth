@@ -10,7 +10,7 @@ const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGl
 
 var access = domain.AccessSpec{
 	[]domain.Scope{
-		domain.Scope{"R", "channel", "test-id"},
+		{"R", "channel", "test-id"},
 	},
 }
 

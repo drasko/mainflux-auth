@@ -16,7 +16,7 @@ type Scope struct {
 	Id      string `json:"id"`
 }
 
-// Payload represents a collection of resource access scope. It will be
+// AccessSpec represents a collection of resource access scope. It will be
 // embedded into the generated API key.
 type AccessSpec struct {
 	Scopes []Scope `json:"scopes"`

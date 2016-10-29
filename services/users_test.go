@@ -35,7 +35,7 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{domain.Scope{"R", "device", "test-id"}}}
+	access := domain.AccessSpec{[]domain.Scope{{"R", "device", "test-id"}}}
 
 	cases := []struct {
 		uid    string
