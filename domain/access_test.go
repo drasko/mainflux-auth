@@ -11,24 +11,24 @@ func TestAccessSpecValidate(t *testing.T) {
 		domain.AccessSpec
 		valid bool
 	}{
-		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"RW", "user", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"RWX", "user", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"R", domain.UserType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"RW", domain.UserType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"RWX", domain.UserType, "id"}}}, true},
 
-		{domain.AccessSpec{[]domain.Scope{{"W", "device", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"WR", "device", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"XWR", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"W", domain.DevType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"WR", domain.DevType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XWR", domain.DevType, "id"}}}, true},
 
-		{domain.AccessSpec{[]domain.Scope{{"X", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"XR", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"XRW", "channel", "id"}}}, true},
-		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}, {"RW", "device", "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"X", domain.ChanType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XR", domain.ChanType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"XRW", domain.ChanType, "id"}}}, true},
+		{domain.AccessSpec{[]domain.Scope{{"R", domain.UserType, "id"}, {"RW", domain.DevType, "id"}}}, true},
 
 		{domain.AccessSpec{}, false},
-		{domain.AccessSpec{[]domain.Scope{{"bad", "user", "id"}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"bad", domain.UserType, "id"}}}, false},
 		{domain.AccessSpec{[]domain.Scope{{"R", "bad", "id"}}}, false},
-		{domain.AccessSpec{[]domain.Scope{{"R", "user", ""}}}, false},
-		{domain.AccessSpec{[]domain.Scope{{"R", "user", "id"}, {"R", "bad", ""}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"R", domain.UserType, ""}}}, false},
+		{domain.AccessSpec{[]domain.Scope{{"R", domain.UserType, "id"}, {"R", "bad", ""}}}, false},
 	}
 
 	for i, c := range cases {
@@ -44,20 +44,20 @@ func TestAccessRequestValidate(t *testing.T) {
 		domain.AccessRequest
 		valid bool
 	}{
-		{domain.AccessRequest{"R", "user", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"W", "user", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"X", "user", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"R", "device", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"W", "device", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"X", "device", "id", "owner", "key"}, true},
-		{domain.AccessRequest{"R", "channel", "id", "dev", "key"}, true},
-		{domain.AccessRequest{"W", "channel", "id", "dev", "key"}, true},
-		{domain.AccessRequest{"X", "channel", "id", "dev", "key"}, true},
+		{domain.AccessRequest{"R", domain.UserType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"W", domain.UserType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"X", domain.UserType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"R", domain.DevType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"W", domain.DevType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"X", domain.DevType, "id", "owner", "key"}, true},
+		{domain.AccessRequest{"R", domain.ChanType, "id", "dev", "key"}, true},
+		{domain.AccessRequest{"W", domain.ChanType, "id", "dev", "key"}, true},
+		{domain.AccessRequest{"X", domain.ChanType, "id", "dev", "key"}, true},
 
-		{domain.AccessRequest{"R", "channel", "id", "", "key"}, false},
-		{domain.AccessRequest{"X", "channel", "", "dev", "key"}, false},
+		{domain.AccessRequest{"R", domain.ChanType, "id", "", "key"}, false},
+		{domain.AccessRequest{"X", domain.ChanType, "", "dev", "key"}, false},
 		{domain.AccessRequest{"W", "bad", "id", "dev", "key"}, false},
-		{domain.AccessRequest{"bad", "user", "id", "owner", "key"}, false},
+		{domain.AccessRequest{"bad", domain.UserType, "id", "owner", "key"}, false},
 	}
 
 	for i, c := range cases {

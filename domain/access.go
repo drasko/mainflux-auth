@@ -6,6 +6,17 @@ import (
 	"strings"
 )
 
+const (
+	// UserType defines a canonical user type name.
+	UserType string = "user"
+
+	// DevType defines a canonical device type name.
+	DevType string = "device"
+
+	// ChanType defines a canonical channel type name.
+	ChanType string = "channel"
+)
+
 // Scope represents a resource(s) access scope definition. Each definition
 // consists of allowed actions, resource type and its identifier. Keep in
 // mind that the '*' is treated as wild card - it can be used to indicate
@@ -49,7 +60,7 @@ func (a *AccessSpec) Validate() bool {
 		}
 
 		s.Type = strings.ToLower(s.Type)
-		if s.Type != "channel" && s.Type != "device" && s.Type != "user" {
+		if s.Type != ChanType && s.Type != DevType && s.Type != UserType {
 			return false
 		}
 	}
@@ -81,7 +92,7 @@ func (a *AccessRequest) Validate() bool {
 	}
 
 	a.Type = strings.ToLower(a.Type)
-	if a.Type != "channel" && a.Type != "device" && a.Type != "user" {
+	if a.Type != ChanType && a.Type != DevType && a.Type != UserType {
 		return false
 	}
 

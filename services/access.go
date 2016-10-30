@@ -48,7 +48,7 @@ func (ac *accessChecker) check() {
 
 func (ac *accessChecker) verifyOwnership() {
 	userId := ac.data.Subject
-	if (ac.req.Type == "user" || ac.req.Type == "device") && userId != ac.req.Owner {
+	if (ac.req.Type == domain.UserType || ac.req.Type == domain.DevType) && userId != ac.req.Owner {
 		ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 		return
 	}
@@ -64,18 +64,18 @@ func (ac *accessChecker) checkMasterKey() {
 		return
 	}
 
-	if ac.req.Type == "user" && ac.req.Id == userId {
+	if ac.req.Type == domain.UserType && ac.req.Id == userId {
 		return
 	}
 
-	if ac.req.Type != "user" {
+	if ac.req.Type != domain.UserType {
 		devId := ac.req.Id
-		if ac.req.Type == "channel" {
+		if ac.req.Type == domain.ChanType {
 			devId = ac.req.Owner
 		}
 
 		cKey := fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
-		if exists, _ := redis.Bool(ac.db.Do("EXISTS", cKey, ac.req.Key)); exists {
+		if exists, _ := redis.Bool(ac.db.Do("EXISTS", cKey)); exists {
 			return
 		}
 	}
@@ -107,7 +107,7 @@ func (ac *accessChecker) checkDeviceKeys() {
 	userId := ac.data.Subject
 
 	devId := ac.req.Id
-	if ac.req.Type == "channel" {
+	if ac.req.Type == domain.ChanType {
 		devId = ac.req.Owner
 	}
 
