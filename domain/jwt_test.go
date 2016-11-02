@@ -3,7 +3,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 const key string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOlt7ImFjdGlvbnMiOiJSIiwidHlwZSI6ImNoYW5uZWwiLCJpZCI6InRlc3QtaWQifV0sImlzcyI6Im1haW5mbHV4Iiwic3ViIjoidGVzdC1pZCJ9.lvEUcdxg2TX9lpsaCblXs7L7xUaq5nosEgez4vzlQMo"

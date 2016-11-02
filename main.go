@@ -6,17 +6,17 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mainflux/mainflux-auth-server/api"
-	"github.com/mainflux/mainflux-auth-server/cache"
-	"github.com/mainflux/mainflux-auth-server/config"
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/api"
+	"github.com/mainflux/mainflux-auth/cache"
+	"github.com/mainflux/mainflux-auth/config"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 const (
-	defaultConfig string = "/src/github.com/mainflux/mainflux-auth-server/config/default.toml"
+	defaultConfig string = "/src/github.com/mainflux/mainflux-auth/config/default.toml"
 	httpPort      string = ":8180"
 	help          string = `
-		Usage: mainflux-auth-server [options]
+		Usage: mainflux-auth [options]
 		Options:
 			-c, --config <file>         Configuration file
 			-h, --help                  Prints this message end exits`

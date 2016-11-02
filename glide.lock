@@ -1,5 +1,5 @@
-hash: a249bb0b766d34e9dfd1660685eb0e94a4fb7e416861c1b898dc50e283c516e6
-updated: 2016-10-18T22:12:04.331229707+02:00
+hash: ec51f1a6630c2090d1f6d12f231f9d38b407b6b2294ce5ae74ed4a1779177ce6
+updated: 2016-11-02T14:43:23.832358161+01:00
 imports:
 - name: github.com/BurntSushi/toml
   version: bbd5bb678321a0d6e58f1099321dfa73391c1b6f
@@ -20,6 +20,7 @@ imports:
   version: 14f9af67c679edd414f72f13d67c917447113df2
   subpackages:
   - bcrypt
+  - blowfish
 testImports:
 - name: github.com/go-errors/errors
   version: a41850380601eeb43f4350f7d17c6bbd8944aaf8
@@ -36,4 +37,4 @@ testImports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: gopkg.in/ory-am/dockertest.v2
-  version: 1b35e25f4895dff0155ac7b67f69f9aa3a275a76
+  version: edb9d9444e6868c1b1e279098b628e7b8e6f0714

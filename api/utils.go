@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 func readPayload(r *http.Request) (domain.AccessSpec, error) {

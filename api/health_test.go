@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mainflux/mainflux-auth-server/api"
+	"github.com/mainflux/mainflux-auth/api"
 )
 
 func TestHealthCheck(t *testing.T) {

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mainflux/mainflux-auth-server/cache"
-	"github.com/mainflux/mainflux-auth-server/domain"
-	"github.com/mainflux/mainflux-auth-server/services"
+	"github.com/mainflux/mainflux-auth/cache"
+	"github.com/mainflux/mainflux-auth/domain"
+	"github.com/mainflux/mainflux-auth/services"
 	dockertest "gopkg.in/ory-am/dockertest.v2"
 )
 

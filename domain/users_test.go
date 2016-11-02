@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 func TestCreateUser(t *testing.T) {

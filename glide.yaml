@@ -1,4 +1,4 @@
-package: github.com/mainflux/mainflux-auth-server
+package: github.com/mainflux/mainflux-auth
 import:
 - package: github.com/codegangsta/negroni
   version: ~0.2.0

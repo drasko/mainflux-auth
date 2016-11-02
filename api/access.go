@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/mainflux/mainflux-auth-server/domain"
-	"github.com/mainflux/mainflux-auth-server/services"
+	"github.com/mainflux/mainflux-auth/domain"
+	"github.com/mainflux/mainflux-auth/services"
 )
 
 func checkCredentials(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

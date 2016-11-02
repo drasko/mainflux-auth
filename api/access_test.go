@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mainflux/mainflux-auth-server/domain"
-	"github.com/mainflux/mainflux-auth-server/services"
+	"github.com/mainflux/mainflux-auth/domain"
+	"github.com/mainflux/mainflux-auth/services"
 )
 
 func TestCheckCredentials(t *testing.T) {

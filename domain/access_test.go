@@ -3,7 +3,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 func TestAccessSpecValidate(t *testing.T) {

@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/mainflux/mainflux-auth-server/cache"
-	"github.com/mainflux/mainflux-auth-server/domain"
+	"github.com/mainflux/mainflux-auth/cache"
+	"github.com/mainflux/mainflux-auth/domain"
 )
 
 // AddDeviceKey adds new device key based on provided access spec. Bear in mind
