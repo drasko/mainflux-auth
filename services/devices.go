@@ -16,8 +16,8 @@ func AddDeviceKey(userId, devId, key string, access domain.AccessSpec) (string, 
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("users:%s", userId)
-	masterKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
+	cKey := fmt.Sprintf("users:%s:master", userId)
+	masterKey, _ := redis.String(c.Do("GET", cKey))
 
 	if masterKey == "" {
 		return "", &domain.ServiceError{Code: http.StatusNotFound}

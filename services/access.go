@@ -56,9 +56,9 @@ func (ac *accessChecker) verifyOwnership() {
 
 func (ac *accessChecker) checkMasterKey() {
 	userId := ac.data.Subject
-	cKey := fmt.Sprintf("users:%s", userId)
+	cKey := fmt.Sprintf("users:%s:master", userId)
 
-	mKey, _ := redis.String(ac.db.Do("HGET", cKey, "masterKey"))
+	mKey, _ := redis.String(ac.db.Do("GET", cKey))
 	if mKey != ac.req.Key {
 		ac.err = &domain.ServiceError{Code: http.StatusForbidden}
 		return
