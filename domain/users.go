@@ -43,3 +43,10 @@ func CreateUser(username, password string) (User, error) {
 
 	return user, nil
 }
+
+// CheckPassword tries to determine whether or not the submitted password
+// matches the one stored (and hashed) during registration. An error will be
+// used to indicate an invalid password.
+func CheckPassword(plain, hashed string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashed), []byte(plain))
+}

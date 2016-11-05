@@ -42,6 +42,31 @@ func registerUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	json.NewEncoder(w).Encode(user)
 }
 
+func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	data := &userReq{}
+	if err = json.Unmarshal(body, data); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user, err := services.Login(data.Username, data.Password)
+	if err != nil {
+		serviceErr := err.(*domain.ServiceError)
+		w.WriteHeader(serviceErr.Code)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+}
+
 func addUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	header := strings.Split(r.Header.Get("Authorization"), " ")
 	if len(header) != 2 {

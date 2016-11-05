@@ -34,6 +34,33 @@ func TestRegisterUser(t *testing.T) {
 	}
 }
 
+func TestLogin(t *testing.T) {
+	username := "test"
+	password := "test"
+
+	cases := []struct {
+		username string
+		password string
+		code     int
+	}{
+		{username, password, 0},
+		{username, "", http.StatusBadRequest},
+		{"", password, http.StatusBadRequest},
+		{"bad", password, http.StatusForbidden},
+		{username, "bad", http.StatusForbidden},
+	}
+
+	for i, c := range cases {
+		_, err := services.Login(c.username, c.password)
+		if err != nil {
+			auth := err.(*domain.ServiceError)
+			if auth.Code != c.code {
+				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
+			}
+		}
+	}
+}
+
 func TestAddUserKey(t *testing.T) {
 	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "test-id"}}}
 

@@ -52,3 +52,25 @@ func TestCreateUser(t *testing.T) {
 		}
 	}
 }
+
+func TestCheckPassword(t *testing.T) {
+	hashed, _ := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
+
+	cases := []struct {
+		plain  string
+		hashed string
+		hasErr bool
+	}{
+		{"test", string(hashed), false},
+		{"bad", string(hashed), true},
+	}
+
+	for i, c := range cases {
+		err := domain.CheckPassword(c.plain, c.hashed)
+
+		hasErr := err != nil
+		if c.hasErr != hasErr {
+			t.Errorf("case %d: expected %t got %t", i, c.hasErr, hasErr)
+		}
+	}
+}

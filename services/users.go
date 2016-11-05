@@ -21,28 +21,62 @@ func RegisterUser(username, password string) (domain.User, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cVal, err := redis.Int64(c.Do("SADD", "users", username))
-	if err != nil {
-		return user, &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	if cVal == 0 {
+	userKey := fmt.Sprintf("users:%s:profile", username)
+	if exists, _ := redis.Bool(c.Do("EXISTS", userKey)); exists {
 		return user, &domain.ServiceError{Code: http.StatusConflict}
 	}
 
-	user, err = domain.CreateUser(username, password)
+	user, err := domain.CreateUser(username, password)
 	if err != nil {
 		return user, err
 	}
 
-	//
-	// NOTE: consider using MULTI to ensure consistency
-	//
-	cKey := fmt.Sprintf("users:%s", user.Id)
-	_, err = c.Do("HMSET", cKey, "username", user.Username, "password", user.Password, "masterKey", user.MasterKey)
+	masterKey := fmt.Sprintf("users:%s:master", user.Id)
+
+	c.Send("WATCH", userKey, masterKey)
+	c.Send("MULTI")
+	c.Send("HMSET", userKey, "password", user.Password, "id", user.Id)
+	c.Send("SET", masterKey, user.MasterKey)
+	_, err = c.Do("EXEC")
 	if err != nil {
 		return user, &domain.ServiceError{Code: http.StatusInternalServerError}
 	}
+
+	return user, nil
+}
+
+// Login retrieves user's master key when invoked with valid username and
+// password.
+func Login(username, password string) (domain.User, error) {
+	var user domain.User
+
+	if username == "" || password == "" {
+		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+	}
+
+	c := cache.Connection()
+	defer c.Close()
+
+	cKey := fmt.Sprintf("users:%s:profile", username)
+
+	items, err := redis.Strings(c.Do("HMGET", cKey, "id", "password"))
+	if err != nil {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	if err := domain.CheckPassword(password, items[1]); err != nil {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	user.Id = items[0]
+	cKey = fmt.Sprintf("users:%s:master", user.Id)
+
+	masterKey, _ := redis.String(c.Do("GET", cKey))
+	if masterKey == "" {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	user.MasterKey = masterKey
 
 	return user, nil
 }
@@ -54,8 +88,8 @@ func AddUserKey(userId, key string, access domain.AccessSpec) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("users:%s", userId)
-	mKey, _ := redis.String(c.Do("HGET", cKey, "masterKey"))
+	cKey := fmt.Sprintf("users:%s:master", userId)
+	mKey, _ := redis.String(c.Do("GET", cKey))
 
 	if mKey == "" {
 		return "", &domain.ServiceError{Code: http.StatusNotFound}
