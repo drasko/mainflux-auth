@@ -45,6 +45,42 @@ func RegisterUser(username, password string) (domain.User, error) {
 	return user, nil
 }
 
+// Login retrieves user's master key when invoked with valid username and
+// password.
+func Login(username, password string) (domain.User, error) {
+	var user domain.User
+
+	if username == "" || password == "" {
+		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+	}
+
+	c := cache.Connection()
+	defer c.Close()
+
+	cKey := fmt.Sprintf("users:%s:profile", username)
+
+	items, err := redis.Strings(c.Do("HMGET", cKey, "id", "password"))
+	if err != nil {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	if err := domain.CheckPassword(password, items[1]); err != nil {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	user.Id = items[0]
+	cKey = fmt.Sprintf("users:%s:master", user.Id)
+
+	masterKey, _ := redis.String(c.Do("GET", cKey))
+	if masterKey == "" {
+		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	user.MasterKey = masterKey
+
+	return user, nil
+}
+
 // AddUserKey adds secondary user key. Bear in mind that any additional keys
 // can be created only when identified as "master", i.e. by providing a master
 // key.

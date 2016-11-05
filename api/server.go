@@ -11,6 +11,7 @@ import (
 func Server() http.Handler {
 	mux := httprouter.New()
 	mux.GET("/status", healthCheck)
+	mux.POST("/sessions", login)
 	mux.POST("/users", registerUser)
 	mux.POST("/users/:user_id/api-keys", addUserKey)
 	mux.POST("/users/:user_id/devices/:device_id/api-keys", addDeviceKey)

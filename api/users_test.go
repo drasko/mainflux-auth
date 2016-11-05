@@ -35,6 +35,36 @@ func TestRegisterUser(t *testing.T) {
 	}
 }
 
+func TestLoginUser(t *testing.T) {
+	cases := []struct {
+		body string
+		code int
+	}{
+		{`{"username":"test","password":"test"}`, 201},
+		{"malformed body", 400},
+		{`{"username":"","password":""}`, 400},
+		{`{"username":"","password":"test"}`, 400},
+		{`{"username":"test","password":""}`, 400},
+		{`{"username":"bad","password":"test"}`, 403},
+		{`{"username":"test","password":"bad"}`, 403},
+	}
+
+	url := fmt.Sprintf("%s/sessions", ts.URL)
+
+	for i, c := range cases {
+		b := strings.NewReader(c.body)
+
+		res, err := http.Post(url, "application/json", b)
+		if err != nil {
+			t.Errorf("case %d: %s", i+1, err.Error())
+		}
+
+		if res.StatusCode != c.code {
+			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
+		}
+	}
+}
+
 func TestAddUserKey(t *testing.T) {
 	cases := []struct {
 		header string
