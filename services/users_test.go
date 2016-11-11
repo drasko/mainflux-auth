@@ -9,8 +9,10 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	username := "test"
-	password := "test"
+	var (
+		username string = "register-username"
+		password string = "register-password"
+	)
 
 	cases := []struct {
 		username string
@@ -35,8 +37,12 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	username := "test"
-	password := "test"
+	var (
+		username string = "login-username"
+		password string = "login-password"
+	)
+
+	services.RegisterUser(username, password)
 
 	cases := []struct {
 		username string
@@ -62,7 +68,13 @@ func TestLogin(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "test-id"}}}
+	var (
+		username string            = "user-key-username"
+		password string            = "user-key-password"
+		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
+	)
+
+	user, _ := services.RegisterUser(username, password)
 
 	cases := []struct {
 		uid    string
@@ -94,7 +106,6 @@ func TestAddUserKey(t *testing.T) {
 }
 
 func TestFetchUserKeys(t *testing.T) {
-	// create test objects
 	oneKeyUser, _ := services.RegisterUser("one", "one")
 	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
 	services.AddUserKey(oneKeyUser.Id, oneKeyUser.MasterKey, access)

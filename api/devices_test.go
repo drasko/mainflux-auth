@@ -5,9 +5,18 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/mainflux/mainflux-auth/services"
 )
 
 func TestAddDeviceKey(t *testing.T) {
+	var (
+		username string = "dev-key-username"
+		password string = "dev-key-password"
+	)
+
+	user, _ := services.RegisterUser(username, password)
+
 	cases := []struct {
 		header string
 		path   string
@@ -41,5 +50,7 @@ func TestAddDeviceKey(t *testing.T) {
 		if res.StatusCode != c.code {
 			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
 		}
+
+		defer res.Body.Close()
 	}
 }

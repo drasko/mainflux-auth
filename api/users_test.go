@@ -73,6 +73,13 @@ func TestLoginUser(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
+	var (
+		username string = "user-key-username"
+		password string = "user-key-password"
+	)
+
+	user, _ := services.RegisterUser(username, password)
+
 	cases := []struct {
 		header string
 		path   string
@@ -111,8 +118,7 @@ func TestAddUserKey(t *testing.T) {
 	}
 }
 
-func TestReadUserKeys(t *testing.T) {
-	// create test objects
+func TestFetchUserKeys(t *testing.T) {
 	oneKeyUser, _ := services.RegisterUser("one", "one")
 	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
 	services.AddUserKey(oneKeyUser.Id, oneKeyUser.MasterKey, access)
@@ -128,8 +134,8 @@ func TestReadUserKeys(t *testing.T) {
 	}{
 		{oneKeyUser.MasterKey, oneKeyUser.Id, http.StatusOK, 1},
 		{noKeysUser.MasterKey, noKeysUser.Id, http.StatusOK, 0},
-		{"bad", user.Id, http.StatusForbidden, 0},
-		{user.MasterKey, "bad", http.StatusNotFound, 0},
+		{"bad", oneKeyUser.Id, http.StatusForbidden, 0},
+		{oneKeyUser.MasterKey, "bad", http.StatusNotFound, 0},
 	}
 
 	for i, c := range cases {

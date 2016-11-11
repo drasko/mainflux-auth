@@ -9,11 +9,14 @@ import (
 
 func TestHasSufficientPermissions(t *testing.T) {
 	var (
-		devId  string            = "test-device"
-		chanId string            = "test-channel"
-		access domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"RW", domain.DevType, devId}, {"R", domain.ChanType, chanId}}}
+		username string            = "access-username"
+		password string            = "access-password"
+		devId    string            = "test-device"
+		chanId   string            = "test-channel"
+		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"RW", domain.DevType, devId}, {"R", domain.ChanType, chanId}}}
 	)
 
+	user, _ := services.RegisterUser(username, password)
 	devKey, _ := services.AddDeviceKey(user.Id, devId, user.MasterKey, access)
 	usrKey, _ := services.AddUserKey(user.Id, user.MasterKey, access)
 

@@ -9,7 +9,13 @@ import (
 )
 
 func TestAddDeviceKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "test-id"}}}
+	var (
+		username string            = "dev-key-username"
+		password string            = "dev-key-password"
+		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
+	)
+
+	user, _ := services.RegisterUser(username, password)
 
 	cases := []struct {
 		id     string
