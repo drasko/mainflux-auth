@@ -15,6 +15,11 @@ type User struct {
 	MasterKey string `json:"key"`
 }
 
+// KeyList represents keys owned by user or device.
+type KeyList struct {
+	Keys []string `json:"keys"`
+}
+
 // CreateUser creates new user account based on provided username and password.
 // The account is assigned with one master key - a key with all permissions on
 // all owned resources regardless of their type. Provided password in encrypted

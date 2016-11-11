@@ -96,3 +96,25 @@ func addUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(rep))
 }
+
+func fetchUserKeys(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	header := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(header) != 2 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	apiKey := header[1]
+
+	userId := ps.ByName("user_id")
+	keys, err := services.FetchUserKeys(userId, apiKey)
+	if err != nil {
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(keys)
+}
