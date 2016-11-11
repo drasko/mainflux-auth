@@ -1,0 +1,377 @@
+swagger: '2.0'
+info:
+  title: Mainflux Auth API
+  description: Mainflux IoT platform authentication and authorization service API.
+  version: "1.0.0"
+schemes:
+  - http
+  - https
+produces:
+  - application/json
+paths:
+  /status:
+    get:
+      summary: Service health check
+      description: |
+        The endpoint returns information about the service status, i.e. whether
+        or not it is capable to respond to any incoming request.
+      tags:
+        - Status
+      responses:
+        200:
+          description: Service is alive and able to respond to new requests.
+          schema:
+            $ref: '#/definitions/HealthCheck'
+        500:
+          description: Service cannot fulfill any further requests.
+  /access-checks:
+    post:
+      summary: Request an access to the platform resource
+      description: |
+        This endpoint is used as an entrypoint to the protected system
+        resources. The clients are required to provide a full access
+        specification, regardless of their origin (e.g. HTTP, MQTT etc.).
+      tags:
+        - Users
+        - Devices
+        - Channels
+        - Platform
+      parameters:
+        - name: specification
+          in: body
+          description: Resource access specification.
+          schema:
+            $ref: '#/definitions/AccessRequest'
+      responses:
+        200:
+          description: Granted resource access.
+        400:
+          description: Missing or invalid access specification.
+        403:
+          description: Resource access is not allowed.
+        500:
+          description: Server-side error occurred.
+  /users:
+    post:
+      summary: Register new user account
+      description: |
+        New accounts are registered given username and password. Provided
+        username must be platform-wide unique. Once the account is created,
+        it is provided with an UUID (used for accessing owned resources), and
+        a master access key.
+      tags:
+        - Users
+      parameters:
+        - name: credentials
+          in: body
+          description: Account credentials.
+          schema:
+            $ref: '#/definitions/UserPass'
+      responses:
+        201:
+          description: Account is created.
+          schema:
+            $ref: '#/definitions/Credentials'
+        400:
+          description: Missing or invalid username and/or password.
+        409:
+          description: Provided username is not unique.
+        500:
+          description: Server-side error occurred.
+  /sessions:
+    post:
+      summary: Retrieves account's master key.
+      description: |
+        To retrieve their master keys, users are required to provide their
+        username and password.
+      tags:
+        - Users
+      parameters:
+        - name: credentials
+          in: body
+          description: Account credentials.
+          schema:
+            $ref: '#/definitions/UserPass'
+      responses:
+        201:
+          description: Started new session by providing master key to the client.
+          schema:
+            $ref: '#/definitions/Credentials'
+        400:
+          description: Invalid request.
+        403:
+          description: Missing or invalid username and/or password.
+        500:
+          description: Server-side error occurred.
+  /users/{user_id}/api-keys:
+    get:
+      summary: Retrieves secondary user keys.
+      tags:
+        - Users
+      parameters:
+        - name: key
+          in: header
+          description: Account master key.
+          type: string
+          required: true
+        - name: user_id
+          in: path
+          description: Unique account identifier.
+          type: string
+          format: uuid
+          required: true
+      responses:
+        200:
+          description: Retrieved a list of secondary user keys.
+          schema:
+            $ref: '#/definitions/KeyList'
+        403:
+          description: Missing or invalid master key provided.
+        404:
+          description: Account with given ID does not exist.
+        500:
+          description: Service is unable to fulfill the request.
+    post:
+      summary: Creates a secondary user key.
+      tags:
+        - Users
+      parameters:
+        - name: key
+          in: header
+          description: Account master key.
+          type: string
+          required: true
+        - name: user_id
+          in: path
+          description: Unique account identifier.
+          type: string
+          format: uuid
+          required: true
+        - name: scope
+          in: body
+          description: Key's scope specification.
+          required: true
+          schema:
+            $ref: '#/definitions/KeySpec'
+      responses:
+        201:
+          description: Created a secondary user key.
+          schema:
+            $ref: '#/definitions/Key'
+        403:
+          description: Missing or invalid master key provided.
+        404:
+          description: Account with given ID does not exist.
+        500:
+          description: Service is unable to fulfill the request.
+  /users/{user_id}/devices/{device_id}/api-keys:
+    get:
+      summary: Retrieves secondary user keys.
+      tags:
+        - Channels
+        - Devices
+      parameters:
+        - name: key
+          in: header
+          description: Account master key.
+          type: string
+          required: true
+        - name: user_id
+          in: path
+          description: Unique account identifier.
+          type: string
+          format: uuid
+          required: true
+        - name: device_id
+          in: path
+          description: Unique device identifier.
+          type: string
+          format: uuid
+          required: true
+      responses:
+        200:
+          description: Retrieved a list of secondary user keys.
+          schema:
+            $ref: '#/definitions/KeyList'
+        403:
+          description: Missing or invalid master key provided.
+        404:
+          description: Account with given ID does not exist.
+        500:
+          description: Service is unable to fulfill the request.
+    post:
+      summary: Creates a device key.
+      description: |
+        Device key relates to any of the non-user resources, i.e. channels
+        and devices.
+      tags:
+        - Channels
+        - Devices
+      parameters:
+        - name: key
+          in: header
+          description: Account master key.
+          type: string
+          required: true
+        - name: user_id
+          in: path
+          description: Unique account identifier.
+          type: string
+          format: uuid
+          required: true
+        - name: device_id
+          in: path
+          description: Unique device identifier.
+          type: string
+          format: uuid
+          required: true
+        - name: scope
+          in: body
+          description: Key's scope specification.
+          required: true
+          schema:
+            $ref: '#/definitions/KeySpec'
+      responses:
+        201:
+          description: Created a device key.
+          schema:
+            $ref: '#/definitions/Key'
+        400:
+          description: Missing or invalid scope specification.
+        403:
+          description: Missing or invalid master key provided.
+        404:
+          description: Account or device with given ID does not exist.
+        500:
+          description: Service is unable to fulfill the request.
+definitions:
+  HealthCheck:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - OK
+        description: Simple string indicating that the service is alive.
+  AccessRequest:
+    type: object
+    required:
+      - action
+      - type
+      - id
+      - key
+    properties:
+      action:
+        type: string
+        enum:
+          - R
+          - W
+          - X
+        description: |
+          Indicates the action client want to apply on targeted resource.
+          An action can be R (read), W (write) or X (execute).
+      type:
+        type: string
+        enum:
+          - user
+          - channel
+          - device
+        description: |
+          A type of accessed resource. Bear in mind that resource types 'device'
+          and 'channel' require a resource owner to be specified as well.
+      id:
+        type: string
+        description: |
+          Unique resource identifier.
+      owner:
+        type: string
+        description: |
+          Unique resource owner identifier. This property must be specified for
+          resource types 'device' and 'channel'.
+      key:
+        type: string
+        description: |
+          Client's access key.
+  UserPass:
+    type: object
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        description: Unique account username.
+      password:
+        type: string
+        description: Arbitrary account password.
+  Credentials:
+    type: object
+    required:
+      - id
+      - key
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Auto-generated unique account identifier.
+      key:
+        type: string
+        description: |
+          Auto-generated account master key. This key can be used to access
+          any resource owned by the created account.
+  KeySpec:
+    type: object
+    required:
+      - scopes
+    properties:
+      scopes:
+        type: array
+        description: An array of scopes accessible by the key owner.
+        minItems: 1
+        items:
+          $ref: '#/definitions/Scope'
+  Scope:
+    type: object
+    required:
+      - actions
+      - type
+      - id
+    properties:
+      actions:
+        type: string
+        description: |
+          A string containing any combination of R (read), W (write) and
+          X (execute) permissions.
+      type:
+        type: string
+        enum:
+          - user
+          - channel
+          - device
+        description: A type of resources affected by the scope.
+      id:
+        type: string
+        description: |
+          Unique identifier of resource affected by the scope. Providing '*'
+          as an identifier will cause all resources of that type to be affected.
+  Key:
+    type: object
+    required:
+      - key
+    properties:
+      key:
+        type: string
+        description: A newly generated access key.
+  KeyList:
+    type: object
+    required:
+      - keys
+    properties:
+      keys:
+        type: array
+        items:
+          type: string
+        minItems: 0
+        description: A list of access keys.

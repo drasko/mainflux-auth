@@ -31,20 +31,20 @@ func TestCheckCredentials(t *testing.T) {
 		body string
 		code int
 	}{
-		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), 200},
-		{`malformed body`, 400},
-		{fmt.Sprintf(`{"action":"bad","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), 400},
-		{fmt.Sprintf(`{"action":"R","type":"bad","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), 400},
+		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), http.StatusOK},
+		{`malformed body`, http.StatusBadRequest},
+		{fmt.Sprintf(`{"action":"bad","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), http.StatusBadRequest},
+		{fmt.Sprintf(`{"action":"R","type":"bad","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, user.MasterKey), http.StatusBadRequest},
 
-		{fmt.Sprintf(`{"action":"R","type":"user","key":"%s"}`, user.MasterKey), 400},
-		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s"}`, user.Id), 400},
+		{fmt.Sprintf(`{"action":"R","type":"user","key":"%s"}`, user.MasterKey), http.StatusBadRequest},
+		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s"}`, user.Id), http.StatusBadRequest},
 
-		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, key), 403},
-		{fmt.Sprintf(`{"action":"R","type":"device","id":"%s","owner":"%s","key":"%s"}`, devId, user.Id, key), 200},
-		{fmt.Sprintf(`{"action":"W","type":"device","id":"%s","owner":"%s","key":"%s"}`, devId, user.Id, key), 200},
-		{fmt.Sprintf(`{"action":"R","type":"channel","id":"%s","owner":"%s","key":"%s"}`, chanId, devId, key), 200},
-		{fmt.Sprintf(`{"action":"R","type":"channel","id":"%s","key":"%s"}`, chanId, key), 400},
-		{fmt.Sprintf(`{"action":"X","type":"channel","id":"%s","owner":"%s","key":"%s"}`, chanId, devId, key), 403},
+		{fmt.Sprintf(`{"action":"R","type":"user","id":"%s","owner":"%s","key":"%s"}`, user.Id, user.Id, key), http.StatusForbidden},
+		{fmt.Sprintf(`{"action":"R","type":"device","id":"%s","owner":"%s","key":"%s"}`, devId, user.Id, key), http.StatusOK},
+		{fmt.Sprintf(`{"action":"W","type":"device","id":"%s","owner":"%s","key":"%s"}`, devId, user.Id, key), http.StatusOK},
+		{fmt.Sprintf(`{"action":"R","type":"channel","id":"%s","owner":"%s","key":"%s"}`, chanId, devId, key), http.StatusOK},
+		{fmt.Sprintf(`{"action":"R","type":"channel","id":"%s","key":"%s"}`, chanId, key), http.StatusBadRequest},
+		{fmt.Sprintf(`{"action":"X","type":"channel","id":"%s","owner":"%s","key":"%s"}`, chanId, devId, key), http.StatusForbidden},
 	}
 
 	url := fmt.Sprintf("%s/access-checks", ts.URL)
