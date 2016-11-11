@@ -117,7 +117,7 @@ func AddUserKey(userId, key string, access domain.AccessSpec) (string, error) {
 	return newKey, nil
 }
 
-// FetchUser keys retrieves secondary user keys. It can be accessed only by
+// FetchUserKeys retrieves secondary user keys. It can be accessed only by
 // providing a valid master key.
 func FetchUserKeys(userId, key string) (domain.KeyList, error) {
 	var list domain.KeyList
@@ -140,11 +140,6 @@ func FetchUserKeys(userId, key string) (domain.KeyList, error) {
 	keys, err := redis.Strings(c.Do("SMEMBERS", cKey))
 	if err != nil {
 		return list, &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	fmt.Printf("MKEY = %s\n", mKey)
-	for _, v := range keys {
-		fmt.Printf("SKEY = %s\n", v)
 	}
 
 	list.Keys = keys

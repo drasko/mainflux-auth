@@ -119,10 +119,11 @@ func TestAddUserKey(t *testing.T) {
 }
 
 func TestFetchUserKeys(t *testing.T) {
-	oneKeyUser, _ := services.RegisterUser("one", "one")
+	oneKeyUser, _ := services.RegisterUser("one-usr", "one-usr")
 	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
 	services.AddUserKey(oneKeyUser.Id, oneKeyUser.MasterKey, access)
-	noKeysUser, _ := services.RegisterUser("empty", "empty")
+
+	noKeysUser, _ := services.RegisterUser("empty-usr", "empty-usr")
 
 	keyList := domain.KeyList{}
 

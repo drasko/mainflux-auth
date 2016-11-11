@@ -44,3 +44,32 @@ func AddDeviceKey(userId, devId, key string, access domain.AccessSpec) (string, 
 
 	return newKey, nil
 }
+
+// FetchDeviceKeys retrieves device keys. It can be accessed only by providing
+// a valid master key.
+func FetchDeviceKeys(userId, devId, key string) (domain.KeyList, error) {
+	var list domain.KeyList
+
+	c := cache.Connection()
+	defer c.Close()
+
+	cKey := fmt.Sprintf("users:%s:master", userId)
+	mKey, _ := redis.String(c.Do("GET", cKey))
+
+	if mKey == "" {
+		return list, &domain.ServiceError{Code: http.StatusNotFound}
+	}
+
+	if key != mKey {
+		return list, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	cKey = fmt.Sprintf("users:%s:devices:%s:keys", userId, devId)
+	keys, err := redis.Strings(c.Do("SMEMBERS", cKey))
+	if err != nil {
+		return list, &domain.ServiceError{Code: http.StatusInternalServerError}
+	}
+
+	list.Keys = keys
+	return list, nil
+}

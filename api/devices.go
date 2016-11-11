@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -39,4 +40,28 @@ func addDeviceKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(rep))
+}
+
+func fetchDeviceKeys(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	header := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(header) != 2 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	apiKey := header[1]
+
+	userId := ps.ByName("user_id")
+	devId := ps.ByName("device_id")
+	keys, err := services.FetchDeviceKeys(userId, devId, apiKey)
+	if err != nil {
+		sErr := err.(*domain.ServiceError)
+		w.WriteHeader(sErr.Code)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(keys)
+
 }
