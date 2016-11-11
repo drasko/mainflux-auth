@@ -116,3 +116,32 @@ func AddUserKey(userId, key string, access domain.AccessSpec) (string, error) {
 
 	return newKey, nil
 }
+
+// FetchUserKeys retrieves secondary user keys. It can be accessed only by
+// providing a valid master key.
+func FetchUserKeys(userId, key string) (domain.KeyList, error) {
+	var list domain.KeyList
+
+	c := cache.Connection()
+	defer c.Close()
+
+	cKey := fmt.Sprintf("users:%s:master", userId)
+	mKey, _ := redis.String(c.Do("GET", cKey))
+
+	if mKey == "" {
+		return list, &domain.ServiceError{Code: http.StatusNotFound}
+	}
+
+	if key != mKey {
+		return list, &domain.ServiceError{Code: http.StatusForbidden}
+	}
+
+	cKey = fmt.Sprintf("users:%s:keys", userId)
+	keys, err := redis.Strings(c.Do("SMEMBERS", cKey))
+	if err != nil {
+		return list, &domain.ServiceError{Code: http.StatusInternalServerError}
+	}
+
+	list.Keys = keys
+	return list, nil
+}

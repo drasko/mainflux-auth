@@ -9,7 +9,13 @@ import (
 )
 
 func TestAddDeviceKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "test-id"}}}
+	var (
+		username string            = "dev-key-username"
+		password string            = "dev-key-password"
+		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
+	)
+
+	user, _ := services.RegisterUser(username, password)
 
 	cases := []struct {
 		id     string
@@ -36,6 +42,44 @@ func TestAddDeviceKey(t *testing.T) {
 
 		if key == "" {
 			t.Errorf("case %d: expected key to be created", i+1)
+		}
+	}
+}
+
+func TestFetchDeviceKeys(t *testing.T) {
+	oneKeyUser, _ := services.RegisterUser("one-dev", "one-dev")
+	devId := "fetch-device-id"
+	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, devId}}}
+	services.AddDeviceKey(oneKeyUser.Id, devId, oneKeyUser.MasterKey, access)
+
+	noKeysUser, _ := services.RegisterUser("empty-dev", "empty-dev")
+
+	cases := []struct {
+		userId string
+		devId  string
+		key    string
+		code   int
+		total  int
+	}{
+		{oneKeyUser.Id, devId, oneKeyUser.MasterKey, 0, 1},
+		{noKeysUser.Id, devId, noKeysUser.MasterKey, 0, 0},
+		{oneKeyUser.Id, devId, "bad", http.StatusForbidden, 0},
+		{"bad", devId, oneKeyUser.MasterKey, http.StatusNotFound, 0},
+		{oneKeyUser.Id, "bad", oneKeyUser.MasterKey, http.StatusNotFound, 0},
+	}
+
+	for i, c := range cases {
+		list, err := services.FetchDeviceKeys(c.userId, c.devId, c.key)
+		if err != nil {
+			auth := err.(*domain.ServiceError)
+			if auth.Code != c.code {
+				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
+			}
+			continue
+		}
+
+		if len(list.Keys) != c.total {
+			t.Errorf("case %d: expected %d items got %d", i+1, c.total, len(list.Keys))
 		}
 	}
 }

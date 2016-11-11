@@ -14,7 +14,9 @@ func Server() http.Handler {
 	mux.POST("/sessions", login)
 	mux.POST("/users", registerUser)
 	mux.POST("/users/:user_id/api-keys", addUserKey)
+	mux.GET("/users/:user_id/api-keys", fetchUserKeys)
 	mux.POST("/users/:user_id/devices/:device_id/api-keys", addDeviceKey)
+	mux.GET("/users/:user_id/devices/:device_id/api-keys", fetchDeviceKeys)
 	mux.POST("/access-checks", checkCredentials)
 
 	n := negroni.Classic()

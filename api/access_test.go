@@ -12,9 +12,11 @@ import (
 
 func TestCheckCredentials(t *testing.T) {
 	var (
-		devId  string            = "test-device"
-		chanId string            = "test-chan"
-		spec   domain.AccessSpec = domain.AccessSpec{
+		username string            = "access-user"
+		password string            = "access-pass"
+		devId    string            = "test-device"
+		chanId   string            = "test-chan"
+		spec     domain.AccessSpec = domain.AccessSpec{
 			[]domain.Scope{
 				{"R", "channel", chanId},
 				{"RW", "device", devId},
@@ -22,6 +24,7 @@ func TestCheckCredentials(t *testing.T) {
 		}
 	)
 
+	user, _ := services.RegisterUser(username, password)
 	key, _ := services.AddUserKey(user.Id, user.MasterKey, spec)
 
 	cases := []struct {

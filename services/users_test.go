@@ -9,8 +9,10 @@ import (
 )
 
 func TestRegisterUser(t *testing.T) {
-	username := "test"
-	password := "test"
+	var (
+		username string = "register-username"
+		password string = "register-password"
+	)
 
 	cases := []struct {
 		username string
@@ -35,8 +37,12 @@ func TestRegisterUser(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	username := "test"
-	password := "test"
+	var (
+		username string = "login-username"
+		password string = "login-password"
+	)
+
+	services.RegisterUser(username, password)
 
 	cases := []struct {
 		username string
@@ -62,7 +68,13 @@ func TestLogin(t *testing.T) {
 }
 
 func TestAddUserKey(t *testing.T) {
-	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "test-id"}}}
+	var (
+		username string            = "user-key-username"
+		password string            = "user-key-password"
+		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
+	)
+
+	user, _ := services.RegisterUser(username, password)
 
 	cases := []struct {
 		uid    string
@@ -89,6 +101,40 @@ func TestAddUserKey(t *testing.T) {
 
 		if key == "" {
 			t.Errorf("case %d: expected key to be created", i+1)
+		}
+	}
+}
+
+func TestFetchUserKeys(t *testing.T) {
+	oneKeyUser, _ := services.RegisterUser("one-usr", "one-usr")
+	access := domain.AccessSpec{[]domain.Scope{{"R", domain.DevType, "dev"}}}
+	services.AddUserKey(oneKeyUser.Id, oneKeyUser.MasterKey, access)
+	noKeysUser, _ := services.RegisterUser("empty-usr", "empty-usr")
+
+	cases := []struct {
+		uid   string
+		key   string
+		code  int
+		total int
+	}{
+		{oneKeyUser.Id, oneKeyUser.MasterKey, 0, 1},
+		{noKeysUser.Id, noKeysUser.MasterKey, 0, 0},
+		{oneKeyUser.Id, "bad", http.StatusForbidden, 0},
+		{"bad", oneKeyUser.MasterKey, http.StatusNotFound, 0},
+	}
+
+	for i, c := range cases {
+		list, err := services.FetchUserKeys(c.uid, c.key)
+		if err != nil {
+			auth := err.(*domain.ServiceError)
+			if auth.Code != c.code {
+				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
+			}
+			continue
+		}
+
+		if len(list.Keys) != c.total {
+			t.Errorf("case %d: expected %d items got %d", i+1, c.total, len(list.Keys))
 		}
 	}
 }
