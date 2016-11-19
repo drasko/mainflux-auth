@@ -15,15 +15,15 @@ func RegisterUser(username, password string) (domain.User, error) {
 	var user domain.User
 
 	if username == "" || password == "" {
-		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+		return user, &domain.AuthError{Code: http.StatusBadRequest}
 	}
 
 	c := cache.Connection()
 	defer c.Close()
 
-	userKey := fmt.Sprintf("users:%s:profile", username)
+	userKey := fmt.Sprintf("auth:user:%s:profile", username)
 	if exists, _ := redis.Bool(c.Do("EXISTS", userKey)); exists {
-		return user, &domain.ServiceError{Code: http.StatusConflict}
+		return user, &domain.AuthError{Code: http.StatusConflict}
 	}
 
 	user, err := domain.CreateUser(username, password)
@@ -31,7 +31,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 		return user, err
 	}
 
-	masterKey := fmt.Sprintf("users:%s:master", user.Id)
+	masterKey := fmt.Sprintf("auth:user:%s:master", user.Id)
 
 	c.Send("WATCH", userKey, masterKey)
 	c.Send("MULTI")
@@ -39,7 +39,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 	c.Send("SET", masterKey, user.MasterKey)
 	_, err = c.Do("EXEC")
 	if err != nil {
-		return user, &domain.ServiceError{Code: http.StatusInternalServerError}
+		return user, &domain.AuthError{Code: http.StatusInternalServerError}
 	}
 
 	return user, nil
@@ -51,97 +51,30 @@ func Login(username, password string) (domain.User, error) {
 	var user domain.User
 
 	if username == "" || password == "" {
-		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+		return user, &domain.AuthError{Code: http.StatusBadRequest}
 	}
 
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("users:%s:profile", username)
+	cKey := fmt.Sprintf("auth:user:%s:profile", username)
 
 	items, err := redis.Strings(c.Do("HMGET", cKey, "id", "password"))
 	if err != nil {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	if err := domain.CheckPassword(password, items[1]); err != nil {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	user.Id = items[0]
-	cKey = fmt.Sprintf("users:%s:master", user.Id)
+	cKey = fmt.Sprintf("auth:user:%s:master", user.Id)
 
-	masterKey, _ := redis.String(c.Do("GET", cKey))
-	if masterKey == "" {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	user.MasterKey, _ = redis.String(c.Do("GET", cKey))
+	if user.MasterKey == "" {
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
-
-	user.MasterKey = masterKey
 
 	return user, nil
-}
-
-// AddUserKey adds secondary user key. Bear in mind that any additional keys
-// can be created only when identified as "master", i.e. by providing a master
-// key.
-func AddUserKey(userId, key string, access domain.AccessSpec) (string, error) {
-	c := cache.Connection()
-	defer c.Close()
-
-	cKey := fmt.Sprintf("users:%s:master", userId)
-	mKey, _ := redis.String(c.Do("GET", cKey))
-
-	if mKey == "" {
-		return "", &domain.ServiceError{Code: http.StatusNotFound}
-	}
-
-	if key != mKey {
-		return "", &domain.ServiceError{Code: http.StatusForbidden}
-	}
-
-	if valid := access.Validate(); !valid {
-		return "", &domain.ServiceError{Code: http.StatusBadRequest}
-	}
-
-	newKey, err := domain.CreateKey(userId, &access)
-	if err != nil {
-		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	cKey = fmt.Sprintf("users:%s:keys", userId)
-	_, err = c.Do("SADD", cKey, newKey)
-	if err != nil {
-		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	return newKey, nil
-}
-
-// FetchUserKeys retrieves secondary user keys. It can be accessed only by
-// providing a valid master key.
-func FetchUserKeys(userId, key string) (domain.KeyList, error) {
-	var list domain.KeyList
-
-	c := cache.Connection()
-	defer c.Close()
-
-	cKey := fmt.Sprintf("users:%s:master", userId)
-	mKey, _ := redis.String(c.Do("GET", cKey))
-
-	if mKey == "" {
-		return list, &domain.ServiceError{Code: http.StatusNotFound}
-	}
-
-	if key != mKey {
-		return list, &domain.ServiceError{Code: http.StatusForbidden}
-	}
-
-	cKey = fmt.Sprintf("users:%s:keys", userId)
-	keys, err := redis.Strings(c.Do("SMEMBERS", cKey))
-	if err != nil {
-		return list, &domain.ServiceError{Code: http.StatusInternalServerError}
-	}
-
-	list.Keys = keys
-	return list, nil
 }

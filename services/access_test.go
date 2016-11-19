@@ -7,66 +7,33 @@ import (
 	"github.com/mainflux/mainflux-auth/services"
 )
 
-func TestHasSufficientPermissions(t *testing.T) {
+func TestCheckPermissions(t *testing.T) {
 	var (
-		username string            = "access-username"
-		password string            = "access-password"
-		devId    string            = "test-device"
-		chanId   string            = "test-channel"
-		access   domain.AccessSpec = domain.AccessSpec{[]domain.Scope{{"RW", domain.DevType, devId}, {"R", domain.ChanType, chanId}}}
+		username string         = "access-user"
+		password string         = "access-pass"
+		device   string         = "device-id"
+		spec     domain.KeySpec = domain.KeySpec{"owner", []domain.Scope{{"RW", "device", device}}}
 	)
 
 	user, _ := services.RegisterUser(username, password)
-	devKey, _ := services.AddDeviceKey(user.Id, devId, user.MasterKey, access)
-	usrKey, _ := services.AddUserKey(user.Id, user.MasterKey, access)
+	key, _ := services.AddKey(user.MasterKey, spec)
 
 	cases := []struct {
-		domain.AccessRequest
+		key     string
+		request domain.AccessRequest
 		granted bool
 	}{
-		{domain.AccessRequest{"R", domain.UserType, user.Id, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"W", domain.UserType, user.Id, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"X", domain.UserType, user.Id, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"R", domain.DevType, devId, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"W", domain.DevType, devId, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"X", domain.DevType, devId, user.Id, user.MasterKey}, true},
-		{domain.AccessRequest{"R", domain.ChanType, chanId, devId, user.MasterKey}, true},
-		{domain.AccessRequest{"W", domain.ChanType, chanId, devId, user.MasterKey}, true},
-		{domain.AccessRequest{"X", domain.ChanType, chanId, devId, user.MasterKey}, true},
-
-		// illegal master key access (resources not owned)
-		{domain.AccessRequest{"R", domain.UserType, "bad", user.Id, user.MasterKey}, false},
-		{domain.AccessRequest{"R", domain.DevType, "bad", user.Id, user.MasterKey}, false},
-		{domain.AccessRequest{"R", domain.ChanType, "bad", "bad", user.MasterKey}, false},
-
-		{domain.AccessRequest{"R", domain.UserType, user.Id, user.Id, usrKey}, false},
-		{domain.AccessRequest{"R", domain.DevType, devId, user.Id, usrKey}, true},
-		{domain.AccessRequest{"W", domain.DevType, devId, user.Id, usrKey}, true},
-		{domain.AccessRequest{"X", domain.DevType, devId, user.Id, usrKey}, false},
-		{domain.AccessRequest{"R", domain.ChanType, chanId, devId, usrKey}, true},
-		{domain.AccessRequest{"W", domain.ChanType, chanId, devId, usrKey}, false},
-
-		// device key requests
-		{domain.AccessRequest{"R", domain.UserType, user.Id, user.Id, devKey}, false},
-		{domain.AccessRequest{"R", domain.DevType, devId, user.Id, devKey}, true},
-		{domain.AccessRequest{"W", domain.DevType, devId, user.Id, devKey}, true},
-		{domain.AccessRequest{"X", domain.DevType, devId, user.Id, devKey}, false},
-		{domain.AccessRequest{"R", domain.ChanType, chanId, devId, devKey}, true},
-		{domain.AccessRequest{"W", domain.ChanType, chanId, devId, devKey}, false},
-
-		// missing or invalid request data
-		{domain.AccessRequest{"illegal-action", domain.DevType, devId, user.Id, devKey}, false},
-		{domain.AccessRequest{"R", "illegal-resource", devId, user.Id, devKey}, false},
-		{domain.AccessRequest{"R", domain.DevType, "unknown-id", user.Id, devKey}, false},
-		{domain.AccessRequest{"R", domain.DevType, devId, user.Id, "invalid-key"}, false},
-		{domain.AccessRequest{"R", domain.ChanType, devId, devId, devKey}, false},
+		{key, domain.AccessRequest{"R", "device", device}, true},
+		{key, domain.AccessRequest{"W", "device", device}, true},
+		{key, domain.AccessRequest{"X", "device", device}, false},
+		{"bad", domain.AccessRequest{"R", "device", device}, false},
+		{key, domain.AccessRequest{"X", "device", "bad"}, false},
 	}
 
 	for i, c := range cases {
-		err := services.CheckPermissions(&c.AccessRequest)
-		granted := err == nil
+		err := services.CheckPermissions(c.key, c.request)
 
-		if c.granted == !granted {
+		if granted := err == nil; c.granted != granted {
 			t.Errorf("case %d: expected granted %t got %t", i+1, c.granted, granted)
 		}
 	}

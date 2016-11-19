@@ -2,10 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/mainflux/mainflux-auth/domain"
@@ -32,8 +30,8 @@ func registerUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	user, err := services.RegisterUser(data.Username, data.Password)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
-		w.WriteHeader(serviceErr.Code)
+		authErr := err.(*domain.AuthError)
+		w.WriteHeader(authErr.Code)
 		return
 	}
 
@@ -57,64 +55,12 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	user, err := services.Login(data.Username, data.Password)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
-		w.WriteHeader(serviceErr.Code)
+		authErr := err.(*domain.AuthError)
+		w.WriteHeader(authErr.Code)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
-}
-
-func addUserKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	apiKey := header[1]
-
-	data, err := readPayload(r)
-	if err != nil {
-		sErr := err.(*domain.ServiceError)
-		w.WriteHeader(sErr.Code)
-		return
-	}
-
-	userId := ps.ByName("user_id")
-	key, err := services.AddUserKey(userId, apiKey, data)
-	if err != nil {
-		sErr := err.(*domain.ServiceError)
-		w.WriteHeader(sErr.Code)
-		return
-	}
-
-	rep := fmt.Sprintf(`{"key":"%s"}`, key)
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(rep))
-}
-
-func fetchUserKeys(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	apiKey := header[1]
-
-	userId := ps.ByName("user_id")
-	keys, err := services.FetchUserKeys(userId, apiKey)
-	if err != nil {
-		sErr := err.(*domain.ServiceError)
-		w.WriteHeader(sErr.Code)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(keys)
 }

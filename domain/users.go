@@ -15,11 +15,6 @@ type User struct {
 	MasterKey string `json:"key"`
 }
 
-// KeyList represents keys owned by user or device.
-type KeyList struct {
-	Keys []string `json:"keys"`
-}
-
 // CreateUser creates new user account based on provided username and password.
 // The account is assigned with one master key - a key with all permissions on
 // all owned resources regardless of their type. Provided password in encrypted
@@ -32,16 +27,11 @@ func CreateUser(username, password string) (User, error) {
 
 	p, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return user, &ServiceError{Code: http.StatusInternalServerError}
+		return user, &AuthError{Code: http.StatusInternalServerError}
 	}
 
 	user.Password = string(p)
-
-	// master access: can do everything on all resources
-	scope := Scope{"RWX", "*", "*"}
-	access := AccessSpec{Scopes: []Scope{scope}}
-
-	user.MasterKey, err = CreateKey(user.Id, &access)
+	user.MasterKey, err = CreateKey(user.Id)
 	if err != nil {
 		return user, err
 	}

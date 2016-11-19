@@ -2,14 +2,14 @@ package domain
 
 import "fmt"
 
-// ServiceError is used as a wrapper for all types of errors originated
+// AuthError is used as a wrapper for all types of errors originated
 // throughout the service. Code will be used as API response status.
-type ServiceError struct {
+type AuthError struct {
 	Code    int
 	Message string
 }
 
-func (e *ServiceError) Error() string {
+func (e *AuthError) Error() string {
 	if e == nil {
 		return "<nil>"
 	}

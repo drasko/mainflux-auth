@@ -1,17 +1,24 @@
 swagger: '2.0'
+
 info:
   title: Mainflux Auth API
   description: Mainflux IoT platform authentication and authorization service API.
   version: "1.0.0"
+
 schemes:
   - http
   - https
+
+consumes:
+  - application/json
+
 produces:
   - application/json
+
 paths:
   /status:
     get:
-      summary: Service health check
+      summary: Service health check.
       description: |
         The endpoint returns information about the service status, i.e. whether
         or not it is capable to respond to any incoming request.
@@ -24,41 +31,13 @@ paths:
             $ref: '#/definitions/HealthCheck'
         500:
           description: Service cannot fulfill any further requests.
-  /access-checks:
-    post:
-      summary: Request an access to the platform resource
-      description: |
-        This endpoint is used as an entrypoint to the protected system
-        resources. The clients are required to provide a full access
-        specification, regardless of their origin (e.g. HTTP, MQTT etc.).
-      tags:
-        - Users
-        - Devices
-        - Channels
-        - Platform
-      parameters:
-        - name: specification
-          in: body
-          description: Resource access specification.
-          schema:
-            $ref: '#/definitions/AccessRequest'
-      responses:
-        200:
-          description: Granted resource access.
-        400:
-          description: Missing or invalid access specification.
-        403:
-          description: Resource access is not allowed.
-        500:
-          description: Server-side error occurred.
   /users:
     post:
-      summary: Register new user account
+      summary: Register new user account.
       description: |
-        New accounts are registered given username and password. Provided
-        username must be platform-wide unique. Once the account is created,
-        it is provided with an UUID (used for accessing owned resources), and
-        a master access key.
+        New accounts are registered given their username and password. Provided
+        username must be platform-wide unique. Once the account is created, its
+        unique identifier is generated together with new master key.
       tags:
         - Users
       parameters:
@@ -77,7 +56,7 @@ paths:
         409:
           description: Provided username is not unique.
         500:
-          description: Server-side error occurred.
+          description: Service is unable to fulfill the request.
   /sessions:
     post:
       summary: Retrieves account's master key.
@@ -89,161 +68,197 @@ paths:
       parameters:
         - name: credentials
           in: body
-          description: Account credentials.
+          description: Account username and password.
           schema:
             $ref: '#/definitions/UserPass'
       responses:
         201:
-          description: Started new session by providing master key to the client.
+          description: |
+            Valid username and password submitted. The client has been provided with
+            master key and an account ID.
           schema:
             $ref: '#/definitions/Credentials'
         400:
-          description: Invalid request.
+          description: Invalid request submitted.
         403:
           description: Missing or invalid username and/or password.
         500:
-          description: Server-side error occurred.
-  /users/{user_id}/api-keys:
+          description: Service is unable to fulfill the request.
+  /api-keys:
     get:
-      summary: Retrieves secondary user keys.
+      summary: Retrieves all keys created by the client.
       tags:
         - Users
       parameters:
         - name: key
           in: header
-          description: Account master key.
+          description: Client's master key.
           type: string
-          required: true
-        - name: user_id
-          in: path
-          description: Unique account identifier.
-          type: string
-          format: uuid
           required: true
       responses:
         200:
-          description: Retrieved a list of secondary user keys.
+          description: Retrieved a list of created keys.
           schema:
             $ref: '#/definitions/KeyList'
         403:
-          description: Missing or invalid master key provided.
-        404:
-          description: Account with given ID does not exist.
+          description: Missing or invalid master key.
         500:
           description: Service is unable to fulfill the request.
     post:
-      summary: Creates a secondary user key.
-      tags:
-        - Users
-      parameters:
-        - name: key
-          in: header
-          description: Account master key.
-          type: string
-          required: true
-        - name: user_id
-          in: path
-          description: Unique account identifier.
-          type: string
-          format: uuid
-          required: true
-        - name: scope
-          in: body
-          description: Key's scope specification.
-          required: true
-          schema:
-            $ref: '#/definitions/KeySpec'
-      responses:
-        201:
-          description: Created a secondary user key.
-          schema:
-            $ref: '#/definitions/Key'
-        403:
-          description: Missing or invalid master key provided.
-        404:
-          description: Account with given ID does not exist.
-        500:
-          description: Service is unable to fulfill the request.
-  /users/{user_id}/devices/{device_id}/api-keys:
-    get:
-      summary: Retrieves secondary user keys.
-      tags:
-        - Channels
-        - Devices
-      parameters:
-        - name: key
-          in: header
-          description: Account master key.
-          type: string
-          required: true
-        - name: user_id
-          in: path
-          description: Unique account identifier.
-          type: string
-          format: uuid
-          required: true
-        - name: device_id
-          in: path
-          description: Unique device identifier.
-          type: string
-          format: uuid
-          required: true
-      responses:
-        200:
-          description: Retrieved a list of secondary user keys.
-          schema:
-            $ref: '#/definitions/KeyList'
-        403:
-          description: Missing or invalid master key provided.
-        404:
-          description: Account with given ID does not exist.
-        500:
-          description: Service is unable to fulfill the request.
-    post:
-      summary: Creates a device key.
+      summary: Creates new API key.
       description: |
-        Device key relates to any of the non-user resources, i.e. channels
-        and devices.
+        An API key can be given to the user, device or channel. The consequence
+        of this fact is that the owner's ID must be explicitly provided during key
+        creation. It is allowed, but not mandatory, to limit the key scope at this
+        point.
       tags:
-        - Channels
-        - Devices
+        - Authorization
+        - Authentication
       parameters:
         - name: key
           in: header
-          description: Account master key.
+          description: Client's master key.
           type: string
           required: true
-        - name: user_id
+        - name: spec
+          in: body
+          description: Key specification containing its owner and scope(s).
+          required: true
+          schema:
+            $ref: '#/definitions/KeySpec'
+      responses:
+        201:
+          description: API key created.
+          schema:
+            $ref: '#/definitions/Key'
+        403:
+          description: Missing or invalid master key.
+        500:
+          description: Service is unable to fulfill the request.
+  /api-keys/{jwt}:
+    get:
+      summary: Retrieves key info.
+      description: |
+        Retrieved data provides a key owner (user, device or channel ID), together
+        with all actions key owner can perform.
+      tags:
+        - Authorization
+        - Authentication
+      parameters:
+        - name: key
+          in: header
+          description: Client's master key.
+          type: string
+          required: true
+        - name: jwt
           in: path
-          description: Unique account identifier.
+          description: The key.
           type: string
-          format: uuid
           required: true
-        - name: device_id
+      responses:
+        200:
+          description: Retrieved key info.
+          schema:
+            $ref: '#/definitions/Key'
+        403:
+          description: Missing or invalid master key.
+        404:
+          description: Non-existent key requested.
+        500:
+          description: Service is unable to fulfill the request.
+    put:
+      summary: Updates key scopes.
+      description: |
+        Updates the key scope by completely replacing the current scope with the
+        provided one.
+      tags:
+        - Authorization
+        - Authentication
+      parameters:
+        - name: key
+          in: header
+          description: Client's master key.
+          type: string
+          required: true
+        - name: jwt
           in: path
-          description: Unique device identifier.
+          description: The key.
           type: string
-          format: uuid
           required: true
-        - name: scope
+        - name: scopes
           in: body
           description: Key's scope specification.
           required: true
           schema:
             $ref: '#/definitions/KeySpec'
       responses:
-        201:
-          description: Created a device key.
-          schema:
-            $ref: '#/definitions/Key'
+        200:
+          description: The key has been updated.
         400:
-          description: Missing or invalid scope specification.
+          description: Invalid key specification provided.
         403:
-          description: Missing or invalid master key provided.
+          description: Missing or invalid master key.
         404:
-          description: Account or device with given ID does not exist.
+          description: Cannot update a non-existent key.
         500:
           description: Service is unable to fulfill the request.
+    delete:
+      summary: Revokes the key.
+      description: Completely removes the key.
+      tags:
+        - Authorization
+        - Authentication
+      parameters:
+        - name: key
+          in: header
+          description: Client's master key.
+          type: string
+          required: true
+        - name: jwt
+          in: path
+          description: The key to be revoked.
+          type: string
+          required: true
+      responses:
+        204:
+          description: The key has been revoked.
+        403:
+          description: Missing or invalid master key.
+        404:
+          description: Cannot revoke a non-existent key.
+        500:
+          description: Service is unable to fulfill the request.
+  /access-checks:
+    post:
+      summary: Request an access to the platform resource.
+      description: |
+        This endpoint is used as an entrypoint to the protected system resources.
+        The clients are required to provide a full access specification, regardless
+        of their origin (e.g. HTTP, MQTT).
+      tags:
+        - Authorization
+        - Authentication
+      parameters:
+        - name: key
+          in: header
+          description: Client's API key.
+          type: string
+          required: true
+        - name: requestSpec
+          in: body
+          description: Resource access specification.
+          schema:
+            $ref: '#/definitions/AccessRequest'
+      responses:
+        200:
+          description: Granted resource access.
+        400:
+          description: Missing or invalid access specification.
+        403:
+          description: Resource access is not allowed.
+        500:
+          description: Service is unable to fulfill the request.
+
 definitions:
   HealthCheck:
     type: object
@@ -261,7 +276,6 @@ definitions:
       - action
       - type
       - id
-      - key
     properties:
       action:
         type: string
@@ -270,30 +284,18 @@ definitions:
           - W
           - X
         description: |
-          Indicates the action client want to apply on targeted resource.
-          An action can be R (read), W (write) or X (execute).
+          Indicates the action client want to apply on targeted resource. An action
+          can be R (read), W (write) or X (execute).
       type:
         type: string
         enum:
           - user
           - channel
           - device
-        description: |
-          A type of accessed resource. Bear in mind that resource types 'device'
-          and 'channel' require a resource owner to be specified as well.
+        description: A type of accessed resource.
       id:
         type: string
-        description: |
-          Unique resource identifier.
-      owner:
-        type: string
-        description: |
-          Unique resource owner identifier. This property must be specified for
-          resource types 'device' and 'channel'.
-      key:
-        type: string
-        description: |
-          Client's access key.
+        description: Unique resource identifier.
   UserPass:
     type: object
     required:
@@ -324,12 +326,16 @@ definitions:
   KeySpec:
     type: object
     required:
-      - scopes
+      - owner
     properties:
+      owner:
+        type: string
+        format: uuid
+        description: Unique owner identifier. Can refer to the channel, device or user.
       scopes:
         type: array
         description: An array of scopes accessible by the key owner.
-        minItems: 1
+        minItems: 0
         items:
           $ref: '#/definitions/Scope'
   Scope:
@@ -342,8 +348,7 @@ definitions:
       actions:
         type: string
         description: |
-          A string containing any combination of R (read), W (write) and
-          X (execute) permissions.
+          A string containing any combination of R (read), W (write) and X (execute) permissions.
       type:
         type: string
         enum:
@@ -353,9 +358,7 @@ definitions:
         description: A type of resources affected by the scope.
       id:
         type: string
-        description: |
-          Unique identifier of resource affected by the scope. Providing '*'
-          as an identifier will cause all resources of that type to be affected.
+        description: Unique identifier of resource affected by the scope.
   Key:
     type: object
     required:

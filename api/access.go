@@ -4,29 +4,35 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/mainflux/mainflux-auth/domain"
 	"github.com/mainflux/mainflux-auth/services"
 )
 
-func checkCredentials(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func checkAccess(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	header := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(header) != 2 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	data := &domain.AccessRequest{}
-	if err = json.Unmarshal(body, data); err != nil {
+	req := domain.AccessRequest{}
+	if err = json.Unmarshal(body, &req); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	err = services.CheckPermissions(data)
-	if err != nil {
-		sErr := err.(*domain.ServiceError)
-		w.WriteHeader(sErr.Code)
+	if err = services.CheckPermissions(header[1], req); err != nil {
+		authErr := err.(*domain.AuthError)
+		w.WriteHeader(authErr.Code)
 		return
 	}
 
