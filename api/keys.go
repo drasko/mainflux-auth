@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -18,7 +19,7 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	spec, err := readPayload(r)
+	spec, err := readSpec(r)
 	if err != nil {
 		sErr := err.(*domain.AuthError)
 		w.WriteHeader(sErr.Code)
@@ -36,6 +37,25 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(rep))
+}
+
+func readSpec(r *http.Request) (domain.KeySpec, error) {
+	data := domain.KeySpec{}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return data, &domain.AuthError{Code: http.StatusBadRequest}
+	}
+
+	if err = json.Unmarshal(body, &data); err != nil {
+		return data, &domain.AuthError{Code: http.StatusBadRequest}
+	}
+
+	if valid := data.Validate(); !valid {
+		return data, &domain.AuthError{Code: http.StatusBadRequest}
+	}
+
+	return data, nil
 }
 
 func fetchKeys(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

@@ -19,21 +19,21 @@ func SetSecretKey(key string) {
 
 // SubjectOf extracts token's subject.
 func SubjectOf(key string) (string, error) {
-	data := jwt.StandardClaims{}
+	claims := jwt.StandardClaims{}
 
 	token, err := jwt.ParseWithClaims(
 		key,
-		&data,
+		&claims,
 		func(val *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
 		},
 	)
 
-	if err != nil || !token.Valid {
+	if err != nil || !token.Valid || claims.Issuer != issuer {
 		return "", &AuthError{http.StatusForbidden, err.Error()}
 	}
 
-	return data.Subject, nil
+	return claims.Subject, nil
 }
 
 func CreateKey(subject string) (string, error) {

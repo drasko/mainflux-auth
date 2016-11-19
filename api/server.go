@@ -18,6 +18,8 @@ func Server() http.Handler {
 	mux.GET("/api-keys", fetchKeys)
 	mux.POST("/api-keys", addKey)
 
+	mux.POST("/access-checks", checkAccess)
+
 	n := negroni.Classic()
 	n.UseHandler(mux)
 	return n
