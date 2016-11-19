@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -37,6 +38,21 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write([]byte(rep))
 }
 
-func updateKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	// TODO: implement the key update
+func fetchKeys(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	header := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(header) != 2 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	keys, err := services.FetchKeys(header[1])
+	if err != nil {
+		sErr := err.(*domain.AuthError)
+		w.WriteHeader(sErr.Code)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(keys)
 }

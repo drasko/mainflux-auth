@@ -17,6 +17,11 @@ const (
 	ChanType string = "channel"
 )
 
+// KeyList represents API keys created by user.
+type KeyList struct {
+	Keys []string `json:"keys"`
+}
+
 // Scope represents a resource(s) access scope definition. Each definition
 // consists of allowed actions, resource type and its identifier.
 type Scope struct {
