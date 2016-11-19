@@ -36,12 +36,7 @@ func CreateUser(username, password string) (User, error) {
 	}
 
 	user.Password = string(p)
-
-	// master access: can do everything on all resources
-	scope := Scope{"RWX", "*", "*"}
-	access := AccessSpec{Scopes: []Scope{scope}}
-
-	user.MasterKey, err = CreateKey(user.Id, &access)
+	user.MasterKey, err = CreateKey(user.Id)
 	if err != nil {
 		return user, err
 	}
