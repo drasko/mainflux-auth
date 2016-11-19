@@ -14,8 +14,8 @@ import (
 
 func TestAddKey(t *testing.T) {
 	var (
-		username string = "user-key-username"
-		password string = "user-key-password"
+		username string = "add-key-username"
+		password string = "add-key-password"
 	)
 
 	user, _ := services.RegisterUser(username, password)
@@ -73,8 +73,6 @@ func TestFetchKeys(t *testing.T) {
 		{"bad", http.StatusForbidden, 0},
 	}
 
-	keys := domain.KeyList{}
-
 	for i, c := range cases {
 		url := fmt.Sprintf("%s/api-keys", ts.URL)
 		req, _ := http.NewRequest("GET", url, nil)
@@ -92,6 +90,7 @@ func TestFetchKeys(t *testing.T) {
 		}
 
 		if res.StatusCode == http.StatusOK {
+			keys := domain.KeyList{}
 			body, _ := ioutil.ReadAll(res.Body)
 			if err = json.Unmarshal(body, &keys); err != nil {
 				t.Errorf("case %d: failed to unmarshal JSON", i+1)
@@ -104,4 +103,63 @@ func TestFetchKeys(t *testing.T) {
 
 		defer res.Body.Close()
 	}
+}
+
+func TestFetchKeySpec(t *testing.T) {
+	expected := domain.KeySpec{"fetch-key-owner", []domain.Scope{{"RW", "device", "device-id"}}}
+
+	user, _ := services.RegisterUser("fetch-key-user", "fetch-key-pass")
+	key, _ := services.AddKey(user.MasterKey, expected)
+
+	cases := []struct {
+		header string
+		key    string
+		code   int
+	}{
+		{user.MasterKey, key, http.StatusOK},
+		{"bad", key, http.StatusForbidden},
+		{user.MasterKey, "bad", http.StatusNotFound},
+	}
+
+	for i, c := range cases {
+		url := fmt.Sprintf("%s/api-keys/%s", ts.URL, c.key)
+		req, _ := http.NewRequest("GET", url, nil)
+		req.Header.Set("Authorization", "Bearer "+c.header)
+		req.Header.Set("Content-Type", "application/json")
+
+		cli := &http.Client{}
+		res, err := cli.Do(req)
+		if err != nil {
+			t.Errorf("case %d: %s", i+1, err.Error())
+		}
+
+		if res.StatusCode != c.code {
+			t.Errorf("case %d: expected status %d got %d", i+1, c.code, res.StatusCode)
+		}
+
+		if res.StatusCode == http.StatusOK {
+			actual := domain.KeySpec{}
+			body, _ := ioutil.ReadAll(res.Body)
+			if err = json.Unmarshal(body, &actual); err != nil {
+				t.Errorf("case %d: failed to unmarshal JSON", i+1)
+			}
+
+			if actual.Owner != expected.Owner {
+				t.Errorf("case %d: expected owner %s got %s", i+1, expected.Owner, actual.Owner)
+			}
+
+			if len(actual.Scopes) != len(expected.Scopes) {
+				t.Errorf("case %d: mismatched number of scopes, expected %d got %d", i+1, len(expected.Scopes), len(actual.Scopes))
+			}
+
+			for i, v := range actual.Scopes {
+				if expected.Scopes[i] != v {
+					t.Errorf("case %d: expected %V got %V", i+1, expected.Scopes[i], v)
+				}
+			}
+		}
+
+		defer res.Body.Close()
+	}
+
 }

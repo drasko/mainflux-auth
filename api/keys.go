@@ -67,12 +67,31 @@ func fetchKeys(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	keys, err := services.FetchKeys(header[1])
 	if err != nil {
-		sErr := err.(*domain.AuthError)
-		w.WriteHeader(sErr.Code)
+		authErr := err.(*domain.AuthError)
+		w.WriteHeader(authErr.Code)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(keys)
+}
+
+func fetchKeySpec(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	header := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(header) != 2 {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	spec, err := services.FetchKeySpec(header[1], ps.ByName("key"))
+	if err != nil {
+		authErr := err.(*domain.AuthError)
+		w.WriteHeader(authErr.Code)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(spec)
 }

@@ -162,6 +162,8 @@ paths:
             $ref: '#/definitions/Key'
         403:
           description: Missing or invalid master key.
+        404:
+          description: Non-existent key requested.
         500:
           description: Service is unable to fulfill the request.
     put:
@@ -196,6 +198,8 @@ paths:
           description: Invalid key specification provided.
         403:
           description: Missing or invalid master key.
+        404:
+          description: Cannot update a non-existent key.
         500:
           description: Service is unable to fulfill the request.
     delete:
@@ -220,6 +224,8 @@ paths:
           description: The key has been revoked.
         403:
           description: Missing or invalid master key.
+        404:
+          description: Cannot revoke a non-existent key.
         500:
           description: Service is unable to fulfill the request.
   /access-checks:
