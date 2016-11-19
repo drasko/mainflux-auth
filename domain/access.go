@@ -25,9 +25,8 @@ type Scope struct {
 	Id      string `json:"id"`
 }
 
-// AccessSpec represents a collection of resource access scope. It will be
-// embedded into the generated API key.
-type AccessSpec struct {
+// KeySpec represents a collection of actions that the key owner can perform.
+type KeySpec struct {
 	Owner  string  `json:"owner"`
 	Scopes []Scope `json:"scopes"`
 }
@@ -36,7 +35,7 @@ type AccessSpec struct {
 // tested against the following conditions: an action can be any permutation of
 // "RWX", a resource can be either "channel", "device" or "user", and an id
 // cannot be empty.
-func (a *AccessSpec) Validate() bool {
+func (a *KeySpec) Validate() bool {
 	if a.Owner == "" {
 		return false
 	}

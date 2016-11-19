@@ -28,7 +28,7 @@ func TestRegisterUser(t *testing.T) {
 	for i, c := range cases {
 		_, err := services.RegisterUser(c.username, c.password)
 		if err != nil {
-			auth := err.(*domain.ServiceError)
+			auth := err.(*domain.AuthError)
 			if auth.Code != c.code {
 				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
 			}
@@ -59,7 +59,7 @@ func TestLogin(t *testing.T) {
 	for i, c := range cases {
 		_, err := services.Login(c.username, c.password)
 		if err != nil {
-			auth := err.(*domain.ServiceError)
+			auth := err.(*domain.AuthError)
 			if auth.Code != c.code {
 				t.Errorf("case %d: expected %d got %d", i+1, c.code, auth.Code)
 			}

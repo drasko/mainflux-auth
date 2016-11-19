@@ -19,14 +19,14 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	spec, err := readPayload(r)
 	if err != nil {
-		sErr := err.(*domain.ServiceError)
+		sErr := err.(*domain.AuthError)
 		w.WriteHeader(sErr.Code)
 		return
 	}
 
 	key, err := services.AddKey(header[1], spec)
 	if err != nil {
-		sErr := err.(*domain.ServiceError)
+		sErr := err.(*domain.AuthError)
 		w.WriteHeader(sErr.Code)
 		return
 	}
@@ -35,4 +35,8 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(rep))
+}
+
+func updateKey(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// TODO: implement the key update
 }

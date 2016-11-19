@@ -32,7 +32,7 @@ func CreateUser(username, password string) (User, error) {
 
 	p, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return user, &ServiceError{Code: http.StatusInternalServerError}
+		return user, &AuthError{Code: http.StatusInternalServerError}
 	}
 
 	user.Password = string(p)

@@ -15,7 +15,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 	var user domain.User
 
 	if username == "" || password == "" {
-		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+		return user, &domain.AuthError{Code: http.StatusBadRequest}
 	}
 
 	c := cache.Connection()
@@ -23,7 +23,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 
 	userKey := fmt.Sprintf("auth:user:%s:profile", username)
 	if exists, _ := redis.Bool(c.Do("EXISTS", userKey)); exists {
-		return user, &domain.ServiceError{Code: http.StatusConflict}
+		return user, &domain.AuthError{Code: http.StatusConflict}
 	}
 
 	user, err := domain.CreateUser(username, password)
@@ -39,7 +39,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 	c.Send("SET", masterKey, user.MasterKey)
 	_, err = c.Do("EXEC")
 	if err != nil {
-		return user, &domain.ServiceError{Code: http.StatusInternalServerError}
+		return user, &domain.AuthError{Code: http.StatusInternalServerError}
 	}
 
 	return user, nil
@@ -51,7 +51,7 @@ func Login(username, password string) (domain.User, error) {
 	var user domain.User
 
 	if username == "" || password == "" {
-		return user, &domain.ServiceError{Code: http.StatusBadRequest}
+		return user, &domain.AuthError{Code: http.StatusBadRequest}
 	}
 
 	c := cache.Connection()
@@ -61,22 +61,20 @@ func Login(username, password string) (domain.User, error) {
 
 	items, err := redis.Strings(c.Do("HMGET", cKey, "id", "password"))
 	if err != nil {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	if err := domain.CheckPassword(password, items[1]); err != nil {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	user.Id = items[0]
 	cKey = fmt.Sprintf("auth:user:%s:master", user.Id)
 
-	masterKey, _ := redis.String(c.Do("GET", cKey))
-	if masterKey == "" {
-		return user, &domain.ServiceError{Code: http.StatusForbidden}
+	user.MasterKey, _ = redis.String(c.Do("GET", cKey))
+	if user.MasterKey == "" {
+		return user, &domain.AuthError{Code: http.StatusForbidden}
 	}
-
-	user.MasterKey = masterKey
 
 	return user, nil
 }

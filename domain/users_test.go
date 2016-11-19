@@ -20,9 +20,9 @@ func TestCreateUser(t *testing.T) {
 	for i, c := range cases {
 		user, err := domain.CreateUser(c.username, c.username)
 		if err != nil {
-			_, ok := err.(*domain.ServiceError)
+			_, ok := err.(*domain.AuthError)
 			if !ok {
-				t.Errorf("case %d: all errors must be ServiceError", i+1)
+				t.Errorf("case %d: all errors must be AuthError", i+1)
 			}
 		}
 

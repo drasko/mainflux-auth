@@ -9,7 +9,7 @@ import (
 	"github.com/mainflux/mainflux-auth/domain"
 )
 
-func AddKey(mKey string, spec domain.AccessSpec) (string, error) {
+func AddKey(mKey string, spec domain.KeySpec) (string, error) {
 	c := cache.Connection()
 	defer c.Close()
 
@@ -20,7 +20,7 @@ func AddKey(mKey string, spec domain.AccessSpec) (string, error) {
 
 	cKey := fmt.Sprintf("auth:user:%s:master", id)
 	if k, _ := redis.String(c.Do("GET", cKey)); k != mKey {
-		return "", &domain.ServiceError{Code: http.StatusForbidden}
+		return "", &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	key, _ := domain.CreateKey(spec.Owner)
@@ -38,7 +38,7 @@ func AddKey(mKey string, spec domain.AccessSpec) (string, error) {
 
 	_, err = c.Do("EXEC")
 	if err != nil {
-		return "", &domain.ServiceError{Code: http.StatusInternalServerError}
+		return "", &domain.AuthError{Code: http.StatusInternalServerError}
 	}
 
 	return key, nil

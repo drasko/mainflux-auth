@@ -30,7 +30,7 @@ func registerUser(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	user, err := services.RegisterUser(data.Username, data.Password)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
+		serviceErr := err.(*domain.AuthError)
 		w.WriteHeader(serviceErr.Code)
 		return
 	}
@@ -55,7 +55,7 @@ func login(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 	user, err := services.Login(data.Username, data.Password)
 	if err != nil {
-		serviceErr := err.(*domain.ServiceError)
+		serviceErr := err.(*domain.AuthError)
 		w.WriteHeader(serviceErr.Code)
 		return
 	}

@@ -53,3 +53,6 @@ func TestAddKey(t *testing.T) {
 		defer res.Body.Close()
 	}
 }
+
+func TestUpdateKey(t *testing.T) {
+}

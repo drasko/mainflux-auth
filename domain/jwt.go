@@ -30,7 +30,7 @@ func SubjectOf(key string) (string, error) {
 	)
 
 	if err != nil || !token.Valid {
-		return "", &ServiceError{http.StatusForbidden, err.Error()}
+		return "", &AuthError{http.StatusForbidden, err.Error()}
 	}
 
 	return data.Subject, nil
@@ -46,7 +46,7 @@ func CreateKey(subject string) (string, error) {
 	key := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	raw, err := key.SignedString([]byte(secretKey))
 	if err != nil {
-		return "", &ServiceError{http.StatusInternalServerError, err.Error()}
+		return "", &AuthError{http.StatusInternalServerError, err.Error()}
 	}
 
 	return raw, nil
