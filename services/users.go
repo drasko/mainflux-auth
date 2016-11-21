@@ -21,7 +21,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	userKey := fmt.Sprintf("auth:user:%s:profile", username)
+	userKey := fmt.Sprintf("auth:%s:%s:profile", domain.UserType, username)
 	if exists, _ := redis.Bool(c.Do("EXISTS", userKey)); exists {
 		return user, &domain.AuthError{Code: http.StatusConflict}
 	}
@@ -31,7 +31,7 @@ func RegisterUser(username, password string) (domain.User, error) {
 		return user, err
 	}
 
-	masterKey := fmt.Sprintf("auth:user:%s:master", user.Id)
+	masterKey := fmt.Sprintf("auth:%s:%s:master", domain.UserType, user.Id)
 
 	c.Send("WATCH", userKey, masterKey)
 	c.Send("MULTI")
@@ -57,7 +57,7 @@ func Login(username, password string) (domain.User, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("auth:user:%s:profile", username)
+	cKey := fmt.Sprintf("auth:%s:%s:profile", domain.UserType, username)
 
 	items, err := redis.Strings(c.Do("HMGET", cKey, "id", "password"))
 	if err != nil {
@@ -69,7 +69,7 @@ func Login(username, password string) (domain.User, error) {
 	}
 
 	user.Id = items[0]
-	cKey = fmt.Sprintf("auth:user:%s:master", user.Id)
+	cKey = fmt.Sprintf("auth:%s:%s:master", domain.UserType, user.Id)
 
 	user.MasterKey, _ = redis.String(c.Do("GET", cKey))
 	if user.MasterKey == "" {

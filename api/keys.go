@@ -13,8 +13,8 @@ import (
 )
 
 func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
+	token := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(token) != 2 {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -26,7 +26,7 @@ func addKey(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	key, err := services.AddKey(header[1], spec)
+	key, err := services.AddKey(token[1], spec)
 	if err != nil {
 		sErr := err.(*domain.AuthError)
 		w.WriteHeader(sErr.Code)
@@ -59,13 +59,13 @@ func readSpec(r *http.Request) (domain.KeySpec, error) {
 }
 
 func fetchKeys(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
+	token := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(token) != 2 {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	keys, err := services.FetchKeys(header[1])
+	keys, err := services.FetchKeys(token[1])
 	if err != nil {
 		authErr := err.(*domain.AuthError)
 		w.WriteHeader(authErr.Code)
@@ -78,13 +78,13 @@ func fetchKeys(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 func fetchKeySpec(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
+	token := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(token) != 2 {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	spec, err := services.FetchKeySpec(header[1], ps.ByName("key"))
+	spec, err := services.FetchKeySpec(token[1], ps.ByName("key"))
 	if err != nil {
 		authErr := err.(*domain.AuthError)
 		w.WriteHeader(authErr.Code)

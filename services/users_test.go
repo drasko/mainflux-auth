@@ -10,8 +10,8 @@ import (
 
 func TestRegisterUser(t *testing.T) {
 	var (
-		username string = "register-username"
-		password string = "register-password"
+		username = "register-username"
+		password = "register-password"
 	)
 
 	cases := []struct {
@@ -38,8 +38,8 @@ func TestRegisterUser(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	var (
-		username string = "login-username"
-		password string = "login-password"
+		username = "login-username"
+		password = "login-password"
 	)
 
 	services.RegisterUser(username, password)

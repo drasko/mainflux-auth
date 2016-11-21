@@ -3,7 +3,6 @@ package api_test
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/mainflux/mainflux-auth/domain"
@@ -12,37 +11,36 @@ import (
 
 func TestCheckAccess(t *testing.T) {
 	var (
-		username string         = "access-user"
-		password string         = "access-pass"
-		device   string         = "test-device"
-		spec     domain.KeySpec = domain.KeySpec{"owner", []domain.Scope{{"RW", "device", device}}}
+		username = "access-user"
+		password = "access-pass"
+		device   = "test-device"
+		spec     = domain.KeySpec{"owner", []domain.Scope{{"CR", domain.DevType, device}}}
 	)
 
 	user, _ := services.RegisterUser(username, password)
 	key, _ := services.AddKey(user.MasterKey, spec)
 
 	cases := []struct {
-		header string
-		body   string
-		code   int
+		token    string
+		resource string
+		action   string
+		code     int
 	}{
-		{key, fmt.Sprintf(`{"action":"R","type":"device","id":"%s"}`, device), http.StatusOK},
-		{key, fmt.Sprintf(`{"action":"W","type":"device","id":"%s"}`, device), http.StatusOK},
-		{key, `malformed body`, http.StatusBadRequest},
-		{key, fmt.Sprintf(`{"type":"device","id":"%s"}`, device), http.StatusBadRequest},
-		{key, fmt.Sprintf(`{"action":"bad","type":"device","id":"%s"}`, device), http.StatusBadRequest},
-		{key, fmt.Sprintf(`{"action":"R","type":"bad","id":"%s"}`, device), http.StatusBadRequest},
-		{key, fmt.Sprintf(`{"action":"R","id":"%s"}`, device), http.StatusBadRequest},
-		{key, fmt.Sprintf(`{"action":"X","type":"device","id":"%s"}`, device), http.StatusForbidden},
-		{key, `{"action":"R","type":"device","id":"bad"}`, http.StatusForbidden},
+		{key, fmt.Sprintf("%s/devices/%s", ts.URL, device), "GET", http.StatusOK},
+		{key, fmt.Sprintf("%s/devices/%s", ts.URL, device), "POST", http.StatusOK},
+		{key, fmt.Sprintf("%s/devices/%s", ts.URL, device), "PUT", http.StatusForbidden},
+		{key, fmt.Sprintf("%s/devices/%s", ts.URL, device), "DELETE", http.StatusForbidden},
+		{"", fmt.Sprintf("%s/devices/%s", ts.URL, device), "GET", http.StatusForbidden},
 	}
 
 	url := fmt.Sprintf("%s/access-checks", ts.URL)
 
 	for i, c := range cases {
-		req, _ := http.NewRequest("POST", url, strings.NewReader(c.body))
-		req.Header.Set("Authorization", "Bearer "+c.header)
+		req, _ := http.NewRequest("POST", url, nil)
+		req.Header.Set("Authorization", "Bearer "+c.token)
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Resource", c.resource)
+		req.Header.Set("X-Action", c.action)
 
 		cli := &http.Client{}
 		res, err := cli.Do(req)

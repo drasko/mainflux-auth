@@ -1,8 +1,6 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -12,25 +10,17 @@ import (
 )
 
 func checkAccess(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	header := strings.Split(r.Header.Get("Authorization"), " ")
-	if len(header) != 2 {
+	token := strings.Split(r.Header.Get("Authorization"), " ")
+	if len(token) != 2 {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	req := domain.AccessRequest{}
-	if err = json.Unmarshal(body, &req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	req.SetAction(r.Header.Get("X-Action"))
+	req.SetIdentity(r.Header.Get("X-Resource"))
 
-	if err = services.CheckPermissions(header[1], req); err != nil {
+	if err := services.CheckPermissions(token[1], req); err != nil {
 		authErr := err.(*domain.AuthError)
 		w.WriteHeader(authErr.Code)
 		return

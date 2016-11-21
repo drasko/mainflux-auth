@@ -9,10 +9,10 @@ import (
 
 func TestCheckPermissions(t *testing.T) {
 	var (
-		username string         = "access-user"
-		password string         = "access-pass"
-		device   string         = "device-id"
-		spec     domain.KeySpec = domain.KeySpec{"owner", []domain.Scope{{"RW", "device", device}}}
+		username = "access-user"
+		password = "access-pass"
+		device   = "device-id"
+		spec     = domain.KeySpec{"owner", []domain.Scope{{"CR", domain.DevType, device}}}
 	)
 
 	user, _ := services.RegisterUser(username, password)
@@ -23,11 +23,13 @@ func TestCheckPermissions(t *testing.T) {
 		request domain.AccessRequest
 		granted bool
 	}{
-		{key, domain.AccessRequest{"R", "device", device}, true},
-		{key, domain.AccessRequest{"W", "device", device}, true},
-		{key, domain.AccessRequest{"X", "device", device}, false},
-		{"bad", domain.AccessRequest{"R", "device", device}, false},
-		{key, domain.AccessRequest{"X", "device", "bad"}, false},
+		{key, domain.AccessRequest{"C", domain.DevType, device}, true},
+		{key, domain.AccessRequest{"R", domain.DevType, device}, true},
+		{key, domain.AccessRequest{"U", domain.DevType, device}, false},
+		{"bad", domain.AccessRequest{"R", domain.DevType, device}, false},
+		{key, domain.AccessRequest{"bad", domain.DevType, device}, false},
+		{key, domain.AccessRequest{"C", "bad", device}, false},
+		{key, domain.AccessRequest{"C", domain.DevType, "bad"}, false},
 	}
 
 	for i, c := range cases {

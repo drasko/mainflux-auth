@@ -10,10 +10,10 @@ import (
 
 func TestAddKey(t *testing.T) {
 	var (
-		username string         = "add-key-username"
-		password string         = "add-key-password"
-		owner    string         = "add-key-owner"
-		access   domain.KeySpec = domain.KeySpec{owner, []domain.Scope{{"R", domain.DevType, "dev"}}}
+		username = "add-key-username"
+		password = "add-key-password"
+		owner    = "add-key-owner"
+		access   = domain.KeySpec{owner, []domain.Scope{{"R", domain.DevType, "dev"}}}
 	)
 
 	user, _ := services.RegisterUser(username, password)
@@ -78,7 +78,7 @@ func TestFetchKeys(t *testing.T) {
 }
 
 func TestFetchKeySpec(t *testing.T) {
-	expected := domain.KeySpec{"fetch-key-owner", []domain.Scope{{"RW", "device", "device-id"}}}
+	expected := domain.KeySpec{"fetch-key-owner", []domain.Scope{{"CR", domain.DevType, "device-id"}}}
 
 	user, _ := services.RegisterUser("fetch-key-user", "fetch-key-pass")
 	key, _ := services.AddKey(user.MasterKey, expected)

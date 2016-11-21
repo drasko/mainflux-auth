@@ -13,7 +13,7 @@ import (
 // performed given the provided key.
 func CheckPermissions(key string, req domain.AccessRequest) error {
 	if valid := req.Validate(); !valid {
-		return &domain.AuthError{Code: http.StatusBadRequest}
+		return &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	_, err := domain.SubjectOf(key)
