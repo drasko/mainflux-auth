@@ -21,10 +21,10 @@ func CheckPermissions(key string, req domain.AccessRequest) error {
 		return err
 	}
 
-	wList := fmt.Sprintf("auth:%s:%s:%s", req.Type, req.Id, req.Action)
-
 	c := cache.Connection()
 	defer c.Close()
+
+	wList := fmt.Sprintf("auth:%s:%s:%s", req.Type, req.Id, req.Action)
 
 	if allowed, _ := redis.Bool(c.Do("SISMEMBER", wList, key)); !allowed {
 		return &domain.AuthError{Code: http.StatusForbidden}

@@ -5,14 +5,26 @@ import (
 	"strings"
 )
 
+const (
+	actions  = "CRUD"
+	protocol = "http://"
+
+	// UserType defines a canonical user type name.
+	UserType string = "users"
+
+	// DevType defines a canonical device type name.
+	DevType string = "devices"
+
+	// ChanType defines a canonical channel type name.
+	ChanType string = "channels"
+)
+
 // AccessRequest specifies a system request that needs to be authorized.
 type AccessRequest struct {
 	Action string
 	Type   string
 	Id     string
 }
-
-const actions string = "CRUD"
 
 // Validate will determine whether an access request is valid or not. A request
 // is considered valid if it has an action specified as either C (create), R
@@ -46,10 +58,10 @@ func (a *AccessRequest) SetAction(method string) error {
 }
 
 // SetIdentity sets a resource type and ID, as extracted from the provided URI.
-// It is expected that the URI has a form <hostname>/<type>/<id>/<other>, with
-// only the first two parameters being required.
+// It is expected URI to have a form of http://<hostname>/<type>/<id>/<other>,
+// with only the <hostname> and <type> being required parts.
 func (a *AccessRequest) SetIdentity(uri string) error {
-	uri = strings.TrimPrefix(uri, "http://")
+	uri = strings.TrimPrefix(uri, protocol)
 	parts := strings.Split(uri, "/")
 
 	if len(parts) < 2 {

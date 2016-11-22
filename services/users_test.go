@@ -19,7 +19,7 @@ func TestRegisterUser(t *testing.T) {
 		password string
 		code     int
 	}{
-		{username, password, 0},
+		{username, password, http.StatusOK},
 		{username, password, http.StatusConflict},
 		{username, "", http.StatusBadRequest},
 		{"", password, http.StatusBadRequest},
@@ -49,7 +49,7 @@ func TestLogin(t *testing.T) {
 		password string
 		code     int
 	}{
-		{username, password, 0},
+		{username, password, http.StatusOK},
 		{username, "", http.StatusBadRequest},
 		{"", password, http.StatusBadRequest},
 		{"bad", password, http.StatusForbidden},

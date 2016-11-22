@@ -13,13 +13,13 @@ import (
 
 // AddKey creates new API key given a master key, and new key specification.
 func AddKey(mKey string, spec domain.KeySpec) (string, error) {
-	c := cache.Connection()
-	defer c.Close()
-
 	id, err := domain.SubjectOf(mKey)
 	if err != nil {
 		return "", err
 	}
+
+	c := cache.Connection()
+	defer c.Close()
 
 	cKey := fmt.Sprintf("auth:%s:%s:master", domain.UserType, id)
 	if cVal, _ := redis.String(c.Do("GET", cKey)); cVal != mKey {
