@@ -90,7 +90,7 @@ paths:
       tags:
         - Users
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's master key.
           type: string
@@ -115,7 +115,7 @@ paths:
         - Authorization
         - Authentication
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's master key.
           type: string
@@ -135,7 +135,7 @@ paths:
           description: Missing or invalid master key.
         500:
           description: Service is unable to fulfill the request.
-  /api-keys/{jwt}:
+  /api-keys/{key}:
     get:
       summary: Retrieves key info.
       description: |
@@ -145,12 +145,12 @@ paths:
         - Authorization
         - Authentication
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's master key.
           type: string
           required: true
-        - name: jwt
+        - name: key
           in: path
           description: The key.
           type: string
@@ -175,12 +175,12 @@ paths:
         - Authorization
         - Authentication
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's master key.
           type: string
           required: true
-        - name: jwt
+        - name: key
           in: path
           description: The key.
           type: string
@@ -209,12 +209,12 @@ paths:
         - Authorization
         - Authentication
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's master key.
           type: string
           required: true
-        - name: jwt
+        - name: key
           in: path
           description: The key to be revoked.
           type: string
@@ -239,16 +239,26 @@ paths:
         - Authorization
         - Authentication
       parameters:
-        - name: key
+        - name: Authorization
           in: header
           description: Client's API key.
           type: string
           required: true
-        - name: requestSpec
-          in: body
-          description: Resource access specification.
-          schema:
-            $ref: '#/definitions/AccessRequest'
+        - name: X-Resource
+          in: header
+          description: Resource URI (e.g. /channels/123).
+          type: string
+          required: true
+        - name: X-Action
+          in: header
+          description: Proxy-forwarded HTTP request method.
+          type: string
+          enum:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+          required: true
       responses:
         200:
           description: Granted resource access.
@@ -270,32 +280,6 @@ definitions:
         enum:
           - OK
         description: Simple string indicating that the service is alive.
-  AccessRequest:
-    type: object
-    required:
-      - action
-      - type
-      - id
-    properties:
-      action:
-        type: string
-        enum:
-          - R
-          - W
-          - X
-        description: |
-          Indicates the action client want to apply on targeted resource. An action
-          can be R (read), W (write) or X (execute).
-      type:
-        type: string
-        enum:
-          - user
-          - channel
-          - device
-        description: A type of accessed resource.
-      id:
-        type: string
-        description: Unique resource identifier.
   UserPass:
     type: object
     required:

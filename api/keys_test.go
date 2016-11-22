@@ -14,8 +14,8 @@ import (
 
 func TestAddKey(t *testing.T) {
 	var (
-		username string = "add-key-username"
-		password string = "add-key-password"
+		username = "add-key-username"
+		password = "add-key-password"
 	)
 
 	user, _ := services.RegisterUser(username, password)
@@ -25,14 +25,14 @@ func TestAddKey(t *testing.T) {
 		body   string
 		code   int
 	}{
-		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"RW","type":"device","id":"1"}]}`, http.StatusCreated},
+		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"CR","type":"devices","id":"1"}]}`, http.StatusCreated},
 		{user.MasterKey, `{"owner":"test"}`, http.StatusCreated},
 		{user.MasterKey, "malformed body", http.StatusBadRequest},
 		{user.MasterKey, `{"owner":""}`, http.StatusBadRequest},
 		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"bad"}]}`, http.StatusBadRequest},
-		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"RW","type":"bad","id":"1"}]}`, http.StatusBadRequest},
-		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"RW","type":"device"}]}`, http.StatusBadRequest},
-		{"bad", `{"owner":"test","scopes":[{"actions":"RW","type":"device","id":"1"}]}`, http.StatusForbidden},
+		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"CR","type":"bad","id":"1"}]}`, http.StatusBadRequest},
+		{user.MasterKey, `{"owner":"test","scopes":[{"actions":"CR","type":"devices"}]}`, http.StatusBadRequest},
+		{"bad", `{"owner":"test","scopes":[{"actions":"CR","type":"devices","id":"1"}]}`, http.StatusForbidden},
 	}
 
 	for i, c := range cases {

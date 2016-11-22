@@ -13,15 +13,15 @@ import (
 
 // AddKey creates new API key given a master key, and new key specification.
 func AddKey(mKey string, spec domain.KeySpec) (string, error) {
-	c := cache.Connection()
-	defer c.Close()
-
 	id, err := domain.SubjectOf(mKey)
 	if err != nil {
 		return "", err
 	}
 
-	cKey := fmt.Sprintf("auth:user:%s:master", id)
+	c := cache.Connection()
+	defer c.Close()
+
+	cKey := fmt.Sprintf("auth:%s:%s:master", domain.UserType, id)
 	if cVal, _ := redis.String(c.Do("GET", cKey)); cVal != mKey {
 		return "", &domain.AuthError{Code: http.StatusForbidden}
 	}
@@ -31,7 +31,7 @@ func AddKey(mKey string, spec domain.KeySpec) (string, error) {
 	c.Send("MULTI")
 	c.Send("SADD", fmt.Sprintf("auth:%s:%s:keys", domain.UserType, id), key)
 
-	keyList := fmt.Sprintf("auth:key:%s", key)
+	keyList := fmt.Sprintf("auth:keys:%s", key)
 
 	for _, scope := range spec.Scopes {
 		for _, action := range scope.Actions {
@@ -61,12 +61,12 @@ func FetchKeys(mKey string) (domain.KeyList, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("auth:user:%s:master", user)
+	cKey := fmt.Sprintf("auth:%s:%s:master", domain.UserType, user)
 	if cVal, _ := redis.String(c.Do("GET", cKey)); cVal != mKey {
 		return keys, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
-	cKey = fmt.Sprintf("auth:user:%s:keys", user)
+	cKey = fmt.Sprintf("auth:%s:%s:keys", domain.UserType, user)
 	keys.Keys, err = redis.Strings(c.Do("SMEMBERS", cKey))
 	if err != nil {
 		return keys, &domain.AuthError{Code: http.StatusInternalServerError}
@@ -88,12 +88,12 @@ func FetchKeySpec(mKey string, key string) (domain.KeySpec, error) {
 	c := cache.Connection()
 	defer c.Close()
 
-	cKey := fmt.Sprintf("auth:user:%s:master", user)
+	cKey := fmt.Sprintf("auth:%s:%s:master", domain.UserType, user)
 	if cVal, _ := redis.String(c.Do("GET", cKey)); cVal != mKey {
 		return spec, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
-	cKey = fmt.Sprintf("auth:user:%s:keys", user)
+	cKey = fmt.Sprintf("auth:%s:%s:keys", domain.UserType, user)
 	if exists, _ := redis.Bool(c.Do("SISMEMBER", cKey, key)); !exists {
 		return spec, &domain.AuthError{Code: http.StatusNotFound}
 	}
@@ -103,7 +103,7 @@ func FetchKeySpec(mKey string, key string) (domain.KeySpec, error) {
 		return spec, &domain.AuthError{Code: http.StatusForbidden}
 	}
 
-	cKey = fmt.Sprintf("auth:key:%s", key)
+	cKey = fmt.Sprintf("auth:keys:%s", key)
 	wLists, err := redis.Strings(c.Do("SMEMBERS", cKey))
 	if err != nil {
 		return spec, &domain.AuthError{Code: http.StatusInternalServerError}

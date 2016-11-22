@@ -13,7 +13,7 @@ import (
 // performed given the provided key.
 func CheckPermissions(key string, req domain.AccessRequest) error {
 	if valid := req.Validate(); !valid {
-		return &domain.AuthError{Code: http.StatusBadRequest}
+		return &domain.AuthError{Code: http.StatusForbidden}
 	}
 
 	_, err := domain.SubjectOf(key)
@@ -21,10 +21,10 @@ func CheckPermissions(key string, req domain.AccessRequest) error {
 		return err
 	}
 
-	wList := fmt.Sprintf("auth:%s:%s:%s", req.Type, req.Id, req.Action)
-
 	c := cache.Connection()
 	defer c.Close()
+
+	wList := fmt.Sprintf("auth:%s:%s:%s", req.Type, req.Id, req.Action)
 
 	if allowed, _ := redis.Bool(c.Do("SISMEMBER", wList, key)); !allowed {
 		return &domain.AuthError{Code: http.StatusForbidden}

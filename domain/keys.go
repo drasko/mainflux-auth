@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-const (
-	// UserType defines a canonical user type name.
-	UserType string = "user"
-
-	// DevType defines a canonical device type name.
-	DevType string = "device"
-
-	// ChanType defines a canonical channel type name.
-	ChanType string = "channel"
-)
-
 // KeyList represents API keys created by user.
 type KeyList struct {
 	Keys []string `json:"keys"`
@@ -38,7 +27,7 @@ type KeySpec struct {
 
 // Validate will try to validate an access specification. The structure will be
 // tested against the following conditions: an action can be any permutation of
-// "RWX", a resource can be either "channel", "device" or "user", and an id
+// "CRUD", a resource can be either "channels", "devices" or "users", and an id
 // cannot be empty.
 func (a *KeySpec) Validate() bool {
 	if a.Owner == "" {
@@ -50,7 +39,7 @@ func (a *KeySpec) Validate() bool {
 			return false
 		}
 
-		if len(s.Actions) == 0 || len(s.Actions) > 3 {
+		if len(s.Actions) == 0 || len(s.Actions) > 4 {
 			return false
 		}
 
@@ -58,7 +47,7 @@ func (a *KeySpec) Validate() bool {
 		sort.Strings(items)
 		s.Actions = strings.ToUpper(strings.Join(items, ""))
 
-		if ok, _ := regexp.MatchString("^(R)?(W)?(X)?$", s.Actions); !ok {
+		if ok, _ := regexp.MatchString("^(C)?(D)?(R)?(U)?$", s.Actions); !ok {
 			return false
 		}
 
